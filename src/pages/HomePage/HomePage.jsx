@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Box, Typography, Button, Fade, Container} from '@mui/material';
 import {useNavigate} from 'react-router-dom';
-import FrostedCard from "../FrostedCard/FrostedCard";
+import FrostedCard from "../../components/layout/FrostedCard/FrostedCard";
 import {motion, AnimatePresence} from 'framer-motion';
 
 const HomePage = () => {

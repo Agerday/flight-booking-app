@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BookingSteps } from '../app/constants/bookingSteps';
 import { initialBookingForm } from '../app/constants/initialBookingForm';
 import { validateAgainstSchema } from '../app/utils/validationUtils';
-import { searchFormSchema } from '../app/validations/searchFormSchema';
-import {passengerFormSchema} from "../app/validations/passengerFormSchema";
+import { searchFormSchema } from '../app/validationSchemas/searchFormSchema';
+import {passengerFormSchema} from "../app/validationSchemas/passengerFormSchema";
 
 const stepSchemas = {
     [BookingSteps.SEARCH]: searchFormSchema,

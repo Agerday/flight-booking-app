@@ -5,7 +5,7 @@ import {
     IconButton
 } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import CenteredPageLayout from "../CenteredPageLayout/CenteredPageLayout";
+import CenteredPageLayout from "../../layout/CenteredPageLayout/CenteredPageLayout";
 
 const GenericStepper = ({
                             currentStep,

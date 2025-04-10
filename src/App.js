@@ -5,11 +5,11 @@ import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import {CssBaseline, ThemeProvider} from '@mui/material';
 import airlineTheme from './theme';
 import {BookingFormProvider} from './context/BookingFormContext';
-import PageWrapper from "./components/PageWrapper/PageWrapper";
-import HomePage from "./components/HomePage/HomePage";
+import PageWrapper from "./components/layout/PageWrapper/PageWrapper";
+import HomePage from "./pages/HomePage/HomePage";
 
-const BookingFlow = lazy(() => import('./pages/BookingStepper'));
-const MyBookings = lazy(() => import('./pages/MyBookings'));
+const BookingFlow = lazy(() => import('./pages/BookingStepper/BookingStepper'));
+const MyBookings = lazy(() => import('./pages/MyBookings/MyBookings'));
 
 function App() {
     return (

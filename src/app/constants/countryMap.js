@@ -16,8 +16,4 @@ export const countryMap = {
     AUS: 'Australia',
 };
 
-export const countryOptions = Object.entries(countryMap).map(
-    ([value, label]) => ({ value, label })
-);
-
 export const mapCountry = (code) => countryMap[code] || code;

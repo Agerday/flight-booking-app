@@ -1,5 +1,3 @@
-// /app/constants/bookingSteps.js
-
 export const BookingSteps = {
     SEARCH: 'search',
     RESULTS: 'results',

@@ -3,7 +3,7 @@ import {Box, Button, Card, CardContent, Chip, Divider, Grid, Paper, Stack, Typog
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import FlightLandIcon from '@mui/icons-material/FlightLand';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import {flightClassThemes} from "../../app/constants/flightClassThemes";
+import {flightClassThemes} from "../../../app/constants/flightClassThemes";
 
 
 const FlightCard = ({flight, onSelect}) => {

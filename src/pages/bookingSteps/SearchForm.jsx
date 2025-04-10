@@ -5,16 +5,15 @@ import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers';
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import {Controller, FormProvider, useForm} from 'react-hook-form';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import FormInput from '../../components/FormInput/FormInput';
+import FormInput from '../../components/booking/FormInput/FormInput';
 import {useBookingForm} from '../../context/BookingFormContext';
-import {searchFormSchema} from '../../app/validations/searchFormSchema';
+import {searchFormSchema} from '../../app/validationSchemas/searchFormSchema';
 import {getAvailableDepartureDates, getFilteredLocations} from '../../app/utils/flightUtils';
 import mockFlights from '../../data/mockFlights';
 import {required} from '../../app/utils/validators';
 
 const SearchForm = () => {
     const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
-
     const methods = useForm({
         defaultValues: {
             origin: formData.origin || '',

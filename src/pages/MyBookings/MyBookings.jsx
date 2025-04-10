@@ -1,8 +1,8 @@
 import React from 'react';
 import {Container, Divider, Typography} from '@mui/material';
-import CardGrid from '../components/CardGrid/CardGrid';
-import FlightCard from '../components/FlightCard/FlightCard';
-import {getFlightById} from '../app/services/flightService';
+import CardGrid from '../../components/flights/CardGrid/CardGrid';
+import FlightCard from '../../components/flights/FlightCard/FlightCard';
+import {getFlightById} from '../../app/services/flightService';
 
 const MyBookings = () => {
     const bookedFlightIds = JSON.parse(localStorage.getItem('myBookings')) || [];

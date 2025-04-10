@@ -2,8 +2,8 @@ import React, {useState} from 'react';
 import Tesseract from 'tesseract.js';
 import {parse as parseMRZ} from 'mrz';
 import {Box, CircularProgress, Typography} from '@mui/material';
-import {mapCountry} from '../../app/constants/countryMap';
-import {mapGender} from "../../app/constants/genderOptions";
+import {mapCountry} from '../../../app/constants/countryMap';
+import {mapGender} from "../../../app/constants/genderOptions";
 
 const PassportScanner = ({onScanComplete}) => {
     const [imageUrl, setImageUrl] = useState(null);

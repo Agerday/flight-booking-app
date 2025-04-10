@@ -1,8 +1,8 @@
 import React, {useEffect} from 'react';
 import {Box, Divider, Typography} from '@mui/material';
 import {FormProvider, useForm} from 'react-hook-form';
-import CardGrid from '../../components/CardGrid/CardGrid';
-import FlightCard from '../../components/FlightCard/FlightCard';
+import CardGrid from '../../components/flights/CardGrid/CardGrid';
+import FlightCard from '../../components/flights/FlightCard/FlightCard';
 import {useBookingForm} from '../../context/BookingFormContext';
 import mockFlights from '../../data/mockFlights';
 import {filterFlights} from '../../app/utils/flightUtils';
@@ -18,11 +18,9 @@ const FlightResults = () => {
     });
 
     const {watch, setValue, formState: {isValid}} = methods;
-
     const {origin: from, destination: to, departure: departureDate} = formData;
     const flights = filterFlights(mockFlights, from, to, departureDate);
     const isReturnTrip = formData.tripType === 'return';
-
 
     useEffect(() => {
         updateStepValidity(currentStep, isValid);
@@ -34,7 +32,6 @@ const FlightResults = () => {
         });
         return () => subscription.unsubscribe();
     }, [watch, updateForm]);
-
 
     const handleSelectFlight = (flight) => {
         if (!isReturnTrip) {

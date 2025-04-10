@@ -4,10 +4,10 @@ const airlineTheme = createTheme({
     palette: {
         mode: 'light',
         primary: {
-            main: '#0055A5', // deep airline blue
+            main: '#0055A5',
         },
         secondary: {
-            main: '#FF8200', // vibrant orange
+            main: '#FF8200',
         },
         background: {
             default: '#f7f9fc',

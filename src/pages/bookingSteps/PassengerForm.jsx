@@ -7,10 +7,10 @@ import {useNavigate} from 'react-router-dom';
 
 import {isEmail, minLength, required} from '../../app/utils/validators';
 import {useBookingForm} from '../../context/BookingFormContext';
-import PassportScanner from '../../components/PassportScanner/PassportScanner';
-import FormInput from '../../components/FormInput/FormInput';
+import PassportScanner from '../../components/booking/PassportScanner/PassportScanner';
+import FormInput from '../../components/booking/FormInput/FormInput';
 import {genderOptions} from '../../app/constants/genderOptions';
-import FrostedCard from "../../components/FrostedCard/FrostedCard";
+import FrostedCard from "../../components/layout/FrostedCard/FrostedCard";
 import {DatePicker} from "@mui/x-date-pickers";
 
 const PassengerForm = () => {
@@ -41,6 +41,8 @@ const PassengerForm = () => {
     } = methods;
 
     const watchAll = watch();
+    const showWarning = (field) =>
+        autoFilledFields[field] && watchAll[field] && !touchedFields[field];
 
     useEffect(() => {
         const subscription = watch(data => {
@@ -69,9 +71,6 @@ const PassengerForm = () => {
         window.scrollTo({top: 0, behavior: 'smooth'});
         setAutoFilledFields(filled);
     };
-
-    const showWarning = (field) =>
-        autoFilledFields[field] && watchAll[field] && !touchedFields[field];
 
     return (
         <>

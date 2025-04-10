@@ -17,7 +17,7 @@ const CardGrid = ({ items, renderItem }) => {
                 <Box
                     key={item.id}
                     sx={{
-                        flex: '0 1 calc(50% - 24px)', // ✅ exactly 2 per row
+                        flex: '0 1 calc(50% - 24px)',
                         minWidth: 300,
                         maxWidth: 500,
                         display: 'flex',
