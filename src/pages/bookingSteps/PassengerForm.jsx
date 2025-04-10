@@ -45,6 +45,10 @@ const PassengerForm = () => {
         autoFilledFields[field] && watchAll[field] && !touchedFields[field];
 
     useEffect(() => {
+        updateStepValidity(currentStep, isValid);
+    }, [isValid, currentStep, updateStepValidity]);
+
+    useEffect(() => {
         const subscription = watch(data => {
             Object.entries(data).forEach(([key, value]) => {
                 updateForm(key, value);

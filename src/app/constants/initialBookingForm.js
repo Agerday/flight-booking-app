@@ -22,4 +22,13 @@ export const initialBookingForm = {
     /*STEP 4*/
     selectedSeatInfo: '',
 
+    /*STEP 5*/
+    extras: {
+        insurance: '',
+        assistance: '',
+        checkedBaggage: false,
+        meals: false,
+        baggageInsurance: false,
+    },
+
 };

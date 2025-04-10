@@ -4,11 +4,11 @@ import GenericStepper from '../../components/ui/GenericStepper/GenericStepper';
 import FlightResults from '../bookingSteps/FlightResults';
 import PassengerForm from '../bookingSteps/PassengerForm';
 import SeatSelection from '../bookingSteps/SeatSelection';
-import ExtrasForm from '../bookingSteps/ExtrasForm';
 import Confirmation from '../bookingSteps/Confirmation';
 import {BookingSteps} from '../../app/constants/bookingSteps';
 import {useStepNavigation} from '../../hooks/useStepNavigation';
 import SearchForm from "../bookingSteps/SearchForm";
+import ExtrasForm from "../bookingSteps/ExtrasForm";
 
 const BookingStepper = () => {
     const {currentStep, setCurrentStep, isValid} = useBookingForm();
