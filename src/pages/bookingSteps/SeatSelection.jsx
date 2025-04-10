@@ -14,13 +14,11 @@ const SeatSelection = () => {
     }, [currentStep, formData.selectedSeatInfo, updateStepValidity]);
 
 
-
     return (
         <Box textAlign="center">
             <Typography variant="h4" gutterBottom>
                 ✈️ Select Your Seat
             </Typography>
-
             <SeatMap
                 selectedSeat={formData.selectedSeatInfo}
                 onSeatSelect={handleSeatSelect}

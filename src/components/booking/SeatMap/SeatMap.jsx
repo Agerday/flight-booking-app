@@ -22,9 +22,15 @@ const getSeatClass = (row) => {
 
 const LegendBox = ({ label, color }) => (
     <Stack direction="row" spacing={1} alignItems="center">
-        <Box sx={{
-            width: 20, height: 20, borderRadius: '20% 20% 5% 5%', backgroundColor: color, border: '1px solid #ccc'
-        }} />
+        <Box
+            sx={{
+                width: 18,
+                height: 18,
+                borderRadius: '20% 20% 5% 5%',
+                backgroundColor: color,
+                border: '1px solid #ccc',
+            }}
+        />
         <Typography variant="body2">{label}</Typography>
     </Stack>
 );
@@ -58,10 +64,10 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                             price,
                         })
                     }
-                    elevation={isSelected ? 6 : 2}
+                    elevation={isSelected ? 6 : 1}
                     sx={{
-                        width: 40,
-                        height: 40,
+                        width: 32,
+                        height: 32,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -73,8 +79,9 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                                 ? color
                                 : `${color}33`,
                         color: isBooked || isSelected ? 'white' : 'black',
-                        transition: 'all 0.2s ease',
+                        fontSize: '0.75rem',
                         fontWeight: 'bold',
+                        transition: 'all 0.2s ease',
                         '&:hover': {
                             backgroundColor: !isBooked && !isSelected ? `${color}66` : undefined,
                         },
@@ -86,7 +93,7 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
         );
     };
 
-    const renderSeatColumn = (seatGroup) => (
+    const renderSeatColumn = (seatGroup) =>
         seatGroup.map((seat) => (
             <Grid item key={seat}>
                 <Grid container direction="column" spacing={1} alignItems="center">
@@ -100,19 +107,23 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                     })}
                 </Grid>
             </Grid>
-        ))
-    );
+        ));
 
     return (
-        <Box>
-            <Grid container spacing={2} justifyContent="center" alignItems="center">
+        <>
+            <Grid
+                container
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
+                sx={{
+                    p: 2,
+                }}
+            >
                 {renderSeatColumn(leftSeats)}
-
-                {/* Aisle gap */}
                 <Grid item>
-                    <Box sx={{ width: 30 }} />
+                    <Box sx={{ width: 24 }} />
                 </Grid>
-
                 {renderSeatColumn(rightSeats)}
             </Grid>
 
@@ -122,7 +133,7 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                 ))}
                 <LegendBox label="Booked" color="#ccc" />
             </Stack>
-        </Box>
+        </>
     );
 };
 
