@@ -8,7 +8,7 @@ import {useNavigate} from 'react-router-dom';
 import {isEmail, minLength, required} from '../../app/utils/validators';
 import {useBookingForm} from '../../context/BookingFormContext';
 import PassportScanner from '../../components/booking/PassportScanner/PassportScanner';
-import FormInput from '../../components/booking/FormInput/FormInput';
+import FormInput from '../../components/ui/FormInput/FormInput';
 import {genderOptions} from '../../app/constants/genderOptions';
 import FrostedCard from "../../components/layout/FrostedCard/FrostedCard";
 import {DatePicker} from "@mui/x-date-pickers";
