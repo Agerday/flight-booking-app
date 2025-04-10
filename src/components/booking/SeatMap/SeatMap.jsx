@@ -1,9 +1,9 @@
 import React from 'react';
 import { Grid, Paper, Tooltip, Typography, Stack, Box } from '@mui/material';
-import AirlineSeatReclineNormalIcon from '@mui/icons-material/AirlineSeatReclineNormal';
 
 const rows = 12;
-const seatsPerRow = ['A', 'B', 'C', 'D', 'E', 'F'];
+const leftSeats = ['A', 'B', 'C'];
+const rightSeats = ['D', 'E', 'F'];
 
 const seatClasses = {
     business: { rows: [1, 2], price: 150, color: '#8e44ad' },
@@ -23,9 +23,7 @@ const getSeatClass = (row) => {
 const LegendBox = ({ label, color }) => (
     <Stack direction="row" spacing={1} alignItems="center">
         <Box sx={{
-            width: 20, height: 20, borderRadius: 1,
-            backgroundColor: color,
-            border: '1px solid #ccc'
+            width: 20, height: 20, borderRadius: '20% 20% 5% 5%', backgroundColor: color, border: '1px solid #ccc'
         }} />
         <Typography variant="body2">{label}</Typography>
     </Stack>
@@ -62,48 +60,60 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                     }
                     elevation={isSelected ? 6 : 2}
                     sx={{
-                        width: 32,
-                        height: 32,
+                        width: 40,
+                        height: 40,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        borderRadius: 1,
+                        borderRadius: '20% 20% 5% 5%',
                         cursor: isBooked ? 'not-allowed' : 'pointer',
                         backgroundColor: isBooked
                             ? '#ccc'
                             : isSelected
                                 ? color
                                 : `${color}33`,
-                        color: isBooked ? 'white' : isSelected ? 'white' : 'black',
+                        color: isBooked || isSelected ? 'white' : 'black',
                         transition: 'all 0.2s ease',
+                        fontWeight: 'bold',
                         '&:hover': {
                             backgroundColor: !isBooked && !isSelected ? `${color}66` : undefined,
                         },
                     }}
                 >
-                    <AirlineSeatReclineNormalIcon sx={{ fontSize: 18 }} />
+                    {seatId}
                 </Paper>
             </Tooltip>
         );
     };
 
+    const renderSeatColumn = (seatGroup) => (
+        seatGroup.map((seat) => (
+            <Grid item key={seat}>
+                <Grid container direction="column" spacing={1} alignItems="center">
+                    {Array.from({ length: rows }, (_, i) => {
+                        const row = i + 1;
+                        return (
+                            <Grid item key={`${row}${seat}`}>
+                                {renderSeat(row, seat)}
+                            </Grid>
+                        );
+                    })}
+                </Grid>
+            </Grid>
+        ))
+    );
+
     return (
         <Box>
-            <Grid container spacing={1} justifyContent="center">
-                {Array.from({ length: rows }, (_, rowIndex) => {
-                    const row = rowIndex + 1;
-                    return (
-                        <Grid item xs={12} key={row}>
-                            <Grid container spacing={1} justifyContent="center">
-                                {seatsPerRow.map((seat) => (
-                                    <Grid item key={seat}>
-                                        {renderSeat(row, seat)}
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Grid>
-                    );
-                })}
+            <Grid container spacing={2} justifyContent="center" alignItems="center">
+                {renderSeatColumn(leftSeats)}
+
+                {/* Aisle gap */}
+                <Grid item>
+                    <Box sx={{ width: 30 }} />
+                </Grid>
+
+                {renderSeatColumn(rightSeats)}
             </Grid>
 
             <Stack direction="row" spacing={3} mt={3} justifyContent="center">
