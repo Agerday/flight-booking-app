@@ -1,21 +1,11 @@
-import React, {useEffect} from 'react';
-import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Checkbox,
-    Chip,
-    Divider,
-    FormControlLabel,
-    Stack,
-    Typography,
-} from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
+import React, {useEffect, useRef} from 'react';
+import {Box, Button, Card, CardContent, Chip, Divider, Stack, Typography,} from '@mui/material';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
+import CheckIcon from '@mui/icons-material/Check';
 import {FormProvider, useForm} from 'react-hook-form';
 import {useBookingForm} from '../../context/BookingFormContext';
 import {assistanceTiers} from '../../app/constants/extraTiers';
+import ToggleCard from "../../components/layout/ToggleCard/ToggledCard";
 
 const ExtrasForm = () => {
     const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
@@ -24,23 +14,26 @@ const ExtrasForm = () => {
         defaultValues: {
             assistance: formData.extras.assistance || '',
             checkedBaggage: formData.extras.checkedBaggage || false,
-            meals: formData.extras.meals || false,
-            insurance: formData.extras.insurance || '',
-            baggageInsurance: formData.extras.baggageInsurance || false,
             baggageWeight: formData.extras.baggageWeight || '',
+            meals: formData.extras.meals || false,
+            baggageInsurance: formData.extras.baggageInsurance || false,
         },
         mode: 'onChange',
     });
 
     const {watch, setValue, formState: {isValid}} = methods;
-
     const watched = watch();
+
+    const last = useRef({
+        checkedBaggage: false,
+        meals: false,
+        baggageInsurance: false,
+    });
 
     useEffect(() => {
         updateStepValidity(currentStep, isValid);
     }, [isValid, currentStep, updateStepValidity]);
 
-    // ✅ Sync extras to global formData only on change (no loop)
     useEffect(() => {
         const subscription = watch((data) => {
             updateForm('extras', {...data});
@@ -60,7 +53,7 @@ const ExtrasForm = () => {
                     Choose the level of assistance for your trip. Premium tiers come with exclusive benefits.
                 </Typography>
 
-                {/* Assistance Cards */}
+                {/* Assistance Tiers */}
                 <Stack direction={{xs: 'column', md: 'row'}} spacing={2} justifyContent="center">
                     {assistanceTiers.map((tier) => {
                         const isSelected = selectedTier === tier.id;
@@ -93,7 +86,7 @@ const ExtrasForm = () => {
                                         </Typography>
                                         {tier.popular && (
                                             <Chip
-                                                label="Most Popular"
+                                                label="Most Popular (Actual Scam)"
                                                 color="success"
                                                 size="small"
                                                 icon={<FlashOnIcon/>}
@@ -137,158 +130,64 @@ const ExtrasForm = () => {
                         ✈️ Additional Options
                     </Typography>
 
-                    <Stack direction={{xs: 'column', md: 'row'}} spacing={2} justifyContent="center">
-                        {/* Checked Baggage Card */}
-                        <Card
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                borderRadius: 3,
-                                boxShadow: watched.checkedBaggage ? 5 : 1,
-                                border: watched.checkedBaggage ? '2px solid' : '1px solid #ccc',
-                                borderColor: watched.checkedBaggage ? 'info.main' : '#ccc',
-                                transition: 'all 0.25s ease',
-                                minWidth: 280,
-                                maxWidth: 320,
+                    <Stack direction={{xs: 'column', md: 'row'}} spacing={2} justifyContent="center" mt={2}>
+                        {/*Checked Baggage*/}
+                        <ToggleCard
+                            icon="🧳"
+                            title="Checked Baggage"
+                            description="Bring more with you by choosing your baggage weight."
+                            price={watched.baggageWeight || '20'}
+                            color="info"
+                            isSelected={watched.checkedBaggage}
+                            pulseTrigger={watched.checkedBaggage && !last.current.checkedBaggage}
+                            onToggle={() => {
+                                const toggled = !watched.checkedBaggage;
+                                setValue('checkedBaggage', toggled);
+                                if (!toggled) setValue('baggageWeight', '');
+                                last.current.checkedBaggage = toggled;
                             }}
-                        >
-                            <CardContent>
-                                <Stack spacing={1} alignItems="flex-start">
-                                    <Stack direction="row" alignItems="center" spacing={1}>
-                                        <Typography variant="h6">Checked Baggage</Typography>
-                                        <Chip label="From €20" size="small" color="info"/>
-                                    </Stack>
-                                    <Typography variant="body2" fontStyle="italic">
-                                        Travel light? Nah. Take it all! 🧳 Choose your weight:
-                                    </Typography>
+                            dropdownLabel="Select your baggage weight:"
+                            dropdownOptions={[
+                                {value: '20', label: '20kg', price: 20},
+                                {value: '25', label: '25kg', price: 25},
+                                {value: '30', label: '30kg', price: 30},
+                            ]}
+                            dropdownValue={watched.baggageWeight}
+                            onDropdownChange={(e) => setValue('baggageWeight', e.target.value)}
+                        />
 
-                                    <select
-                                        disabled={!watched.checkedBaggage}
-                                        value={watched.baggageWeight}
-                                        onChange={(e) =>
-                                            setValue('baggageWeight', e.target.value)}
-                                        style={{
-                                            padding: '8px',
-                                            borderRadius: '6px',
-                                            border: '1px solid #ccc',
-                                            width: '100%',
-                                            fontSize: '0.9rem',
-                                            opacity: watched.checkedBaggage ? 1 : 0.5,
-                                        }}
-                                    >
-                                        <option value="">Select weight</option>
-                                        <option value="20">20kg – €20</option>
-                                        <option value="25">25kg – €25</option>
-                                        <option value="30">30kg – €30</option>
-                                    </select>
+                        {/*Meal*/}
+                        <ToggleCard
+                            icon="🍽️"
+                            title="Meal"
+                            description="Enjoy a hot meal on board. Vegetarian and vegan options available."
+                            price={12}
+                            color="secondary"
+                            isSelected={watched.meals}
+                            pulseTrigger={watched.meals && !last.current.meals}
+                            onToggle={() => {
+                                const toggled = !watched.meals;
+                                setValue('meals', toggled);
+                                last.current.meals = toggled;
+                            }}></ToggleCard>
 
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={watched.checkedBaggage}
-                                                onChange={(e) =>
-                                                    setValue('checkedBaggage', e.target.checked)}
-                                            />
-                                        }
-                                        label="Enable"
-                                    />
-                                </Stack>
-                            </CardContent>
-                        </Card>
-
-                        {/* Meals Card */}
-                        <Card
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                borderRadius: 3,
-                                boxShadow: watched.meals ? 5 : 1,
-                                border: watched.meals ? '2px solid' : '1px solid #ccc',
-                                borderColor: watched.meals ? 'secondary.main' : '#ccc',
-                                transition: 'all 0.25s ease',
-                                minWidth: 280,
-                                maxWidth: 320,
+                        {/*Baggage Insurance*/}
+                        <ToggleCard
+                            icon="🛡️"
+                            title="Baggage Insurance"
+                            description="Protect your baggage up to €1000 from loss or damage."
+                            price={8}
+                            color="warning"
+                            isSelected={watched.baggageInsurance}
+                            pulseTrigger={watched.baggageInsurance && !last.current.baggageInsurance}
+                            onToggle={() => {
+                                const toggled = !watched.baggageInsurance;
+                                setValue('baggageInsurance', toggled);
+                                last.current.baggageInsurance = toggled;
                             }}
-                        >
-                            <CardContent>
-                                <Stack spacing={1} alignItems="flex-start">
-                                    <Stack direction="row" alignItems="center" spacing={1}>
-                                        <Typography variant="h6">Meals</Typography>
-                                        <Chip
-                                            label="€12"
-                                            icon={<span role="img" aria-label="meal">🍽️</span>}
-                                            size="small"
-                                            color="secondary"
-                                            variant="outlined"
-                                        />
-                                    </Stack>
-                                    <Typography variant="body2" fontStyle="italic">
-                                        Enjoy a hot meal on board — includes vegetarian and vegan options 🍱
-                                    </Typography>
-
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={watched.meals}
-                                                onChange={(e) =>
-                                                    setValue('meals', e.target.checked)}
-                                            />
-                                        }
-                                        label="Add Meal"
-                                    />
-                                </Stack>
-                            </CardContent>
-                        </Card>
-
-                        {/* Baggage Insurance Card */}
-                        <Card
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                borderRadius: 3,
-                                boxShadow: watched.baggageInsurance ? 5 : 1,
-                                border: watched.baggageInsurance ? '2px solid' : '1px solid #ccc',
-                                borderColor: watched.baggageInsurance ? 'warning.main' : '#ccc',
-                                transition: 'all 0.25s ease',
-                                minWidth: 280,
-                                maxWidth: 320,
-                            }}
-                        >
-                            <CardContent>
-                                <Stack spacing={1} alignItems="flex-start">
-                                    <Stack direction="row" alignItems="center" spacing={1}>
-                                        <Typography variant="h6">Baggage Insurance</Typography>
-                                        <Chip
-                                            label="€8"
-                                            icon={<span role="img" aria-label="shield">🛡️</span>}
-                                            size="small"
-                                            color="warning"
-                                            variant="outlined"
-                                        />
-                                    </Stack>
-                                    <Typography variant="body2" fontStyle="italic">
-                                        Covers up to €1000 for lost/damaged bags. Fly stress-free ✨
-                                    </Typography>
-
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={watched.baggageInsurance}
-                                                onChange={(e) =>
-                                                    setValue('baggageInsurance', e.target.checked)}
-                                            />
-                                        }
-                                        label="Add Insurance"
-                                    />
-                                </Stack>
-                            </CardContent>
-                        </Card>
+                        />
                     </Stack>
                 </Box>
-
             </Box>
         </FormProvider>
     );
