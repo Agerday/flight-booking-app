@@ -29,6 +29,7 @@ export const initialBookingForm = {
         checkedBaggage: false,
         meals: false,
         baggageInsurance: false,
-    },
+        baggageWeight: '',
+    }
 
 };

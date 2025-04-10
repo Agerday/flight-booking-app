@@ -11,12 +11,13 @@ import {
     FormGroup,
     FormControlLabel,
     Checkbox,
+    Grid,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
+import { useForm, FormProvider } from 'react-hook-form';
 import { useBookingForm } from '../../context/BookingFormContext';
 import { assistanceTiers } from '../../app/constants/extraTiers';
-import { useForm, FormProvider } from 'react-hook-form';
 
 const ExtrasForm = () => {
     const { formData, updateForm, updateStepValidity, currentStep } = useBookingForm();
@@ -28,22 +29,28 @@ const ExtrasForm = () => {
             meals: formData.extras.meals || false,
             insurance: formData.extras.insurance || '',
             baggageInsurance: formData.extras.baggageInsurance || false,
+            baggageWeight: formData.extras.baggageWeight || '',
         },
         mode: 'onChange',
     });
 
     const { watch, setValue, formState: { isValid } } = methods;
-    const watchAll = watch();
 
-    useEffect(() => {
-        updateForm('extras', { ...watchAll });
-    }, [watchAll, updateForm]);
+    const watched = watch();
 
     useEffect(() => {
         updateStepValidity(currentStep, isValid);
     }, [isValid, currentStep, updateStepValidity]);
 
-    const selectedTier = watchAll.assistance || 'normal';
+    // ✅ Sync extras to global formData only on change (no loop)
+    useEffect(() => {
+        const subscription = watch((data) => {
+            updateForm('extras', { ...data });
+        });
+        return () => subscription.unsubscribe();
+    }, [watch, updateForm]);
+
+    const selectedTier = watched.assistance || 'normal';
 
     return (
         <FormProvider {...methods}>
@@ -55,6 +62,7 @@ const ExtrasForm = () => {
                     Choose the level of assistance for your trip. Premium tiers come with exclusive benefits.
                 </Typography>
 
+                {/* Assistance Cards */}
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="center">
                     {assistanceTiers.map((tier) => {
                         const isSelected = selectedTier === tier.id;
@@ -72,7 +80,6 @@ const ExtrasForm = () => {
                                     minWidth: 250,
                                     maxWidth: 300,
                                     borderRadius: 3,
-                                    position: 'relative',
                                     transition: 'transform 0.25s ease, box-shadow 0.25s ease',
                                     '&:hover': {
                                         transform: 'translateY(-4px)',
@@ -88,7 +95,7 @@ const ExtrasForm = () => {
                                         </Typography>
                                         {tier.popular && (
                                             <Chip
-                                                label="Most Popular"
+                                                label="Most Popular (Actual Scam)"
                                                 color="success"
                                                 size="small"
                                                 icon={<FlashOnIcon />}
@@ -126,40 +133,108 @@ const ExtrasForm = () => {
                     })}
                 </Stack>
 
-                {/* Other Extras */}
+                {/* Extras Section */}
                 <Box mt={5}>
                     <Typography variant="h6" gutterBottom textAlign="center">
                         ✈️ Additional Options
                     </Typography>
-                    <FormGroup row sx={{ justifyContent: 'center' }}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={watchAll.checkedBaggage}
-                                    onChange={(e) => setValue('checkedBaggage', e.target.checked)}
+                    <Grid container spacing={2} justifyContent="center">
+                        {/* Checked Baggage */}
+                        <Grid item xs={12} md={6}>
+                            <Stack spacing={1}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={watched.checkedBaggage}
+                                            onChange={(e) => setValue('checkedBaggage', e.target.checked)}
+                                        />
+                                    }
+                                    label={
+                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                            <Typography>Add Checked Baggage</Typography>
+                                            <Chip label="From €20" size="small" variant="outlined" color="info" />
+                                        </Stack>
+                                    }
                                 />
-                            }
-                            label="Add Checked Baggage"
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={watchAll.meals}
-                                    onChange={(e) => setValue('meals', e.target.checked)}
-                                />
-                            }
-                            label="Add Meals"
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={watchAll.baggageInsurance}
-                                    onChange={(e) => setValue('baggageInsurance', e.target.checked)}
-                                />
-                            }
-                            label="Baggage Insurance"
-                        />
-                    </FormGroup>
+                                {watched.checkedBaggage && (
+                                    <select
+                                        value={watched.baggageWeight}
+                                        onChange={(e) => setValue('baggageWeight', e.target.value)}
+                                        style={{
+                                            padding: '8px',
+                                            borderRadius: '6px',
+                                            border: '1px solid #ccc',
+                                            maxWidth: '200px',
+                                            fontSize: '0.9rem',
+                                        }}
+                                    >
+                                        <option value="">Select weight</option>
+                                        <option value="20">20kg – €20</option>
+                                        <option value="25">25kg – €25</option>
+                                        <option value="30">30kg – €30</option>
+                                    </select>
+                                )}
+                            </Stack>
+                        </Grid>
+
+                        {/* Meals */}
+                        <Grid item xs={12} md={6}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={watched.meals}
+                                        onChange={(e) => setValue('meals', e.target.checked)}
+                                    />
+                                }
+                                label={
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                        <Typography>Add Meals</Typography>
+                                        <Chip
+                                            label="€12"
+                                            icon={<span role="img" aria-label="meal">🍽️</span>}
+                                            size="small"
+                                            color="secondary"
+                                            variant="outlined"
+                                        />
+                                    </Stack>
+                                }
+                            />
+                            {watched.meals && (
+                                <Typography variant="caption" sx={{ ml: 4, fontStyle: 'italic' }}>
+                                    Includes vegetarian and vegan options.
+                                </Typography>
+                            )}
+                        </Grid>
+
+                        {/* Baggage Insurance */}
+                        <Grid item xs={12}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={watched.baggageInsurance}
+                                        onChange={(e) => setValue('baggageInsurance', e.target.checked)}
+                                    />
+                                }
+                                label={
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                        <Typography>Baggage Insurance</Typography>
+                                        <Chip
+                                            label="€8"
+                                            icon={<span role="img" aria-label="shield">🛡️</span>}
+                                            size="small"
+                                            color="warning"
+                                            variant="outlined"
+                                        />
+                                    </Stack>
+                                }
+                            />
+                            {watched.baggageInsurance && (
+                                <Typography variant="caption" sx={{ ml: 4, fontStyle: 'italic' }}>
+                                    Covers up to €1000 for lost/damaged luggage.
+                                </Typography>
+                            )}
+                        </Grid>
+                    </Grid>
                 </Box>
             </Box>
         </FormProvider>
