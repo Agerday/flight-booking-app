@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {Divider, Grid, Typography} from '@mui/material';
-import {CalendarToday, CreditCard, Email, HourglassBottom, Public, VpnKey, Wc as WcIcon} from '@mui/icons-material';
+import {CreditCard, Email, Public, VpnKey, Wc as WcIcon} from '@mui/icons-material';
 
-import {Controller, FormProvider, useForm} from 'react-hook-form';
+import {FormProvider, useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router-dom';
 
 import {isEmail, minLength, required} from '../../app/utils/validators';
@@ -11,7 +11,7 @@ import PassportScanner from '../../components/booking/PassportScanner/PassportSc
 import FormInput from '../../components/ui/FormInput/FormInput';
 import {genderOptions} from '../../app/constants/genderOptions';
 import FrostedCard from "../../components/layout/FrostedCard/FrostedCard";
-import {DatePicker} from "@mui/x-date-pickers";
+import DatePickerInput from "../../components/ui/DatepickerInput/DatepickerInput";
 
 const PassengerForm = () => {
     const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
@@ -119,7 +119,7 @@ const PassengerForm = () => {
                                     name="nationality"
                                     label="Nationality *"
                                     placeholder="e.g. Belgium"
-                                    icon={<Public />}
+                                    icon={<Public/>}
                                     validators={[required]}
                                     showAutofillWarning
                                     extraWarning={showWarning('nationality') ? 'Please verify this information' : ''}
@@ -139,27 +139,14 @@ const PassengerForm = () => {
                             </Grid>
                             <Grid item xs={12} md={6}>
                                 <Grid item xs={12} md={6}>
-                                    <Controller
+                                    <DatePickerInput
                                         name="dateOfBirth"
-                                        control={methods.control}
-                                        rules={{ validate: required }}
-                                        render={({ field, fieldState }) => (
-                                            <DatePicker
-                                                label="Date of Birth *"
-                                                value={field.value || null}
-                                                onChange={(val) => field.onChange(val)}
-                                                slotProps={{
-                                                    textField: {
-                                                        fullWidth: true,
-                                                        error: !!fieldState.error,
-                                                        helperText: fieldState.error?.message,
-                                                    },
-                                                }}
-                                            />
-                                        )}
+                                        label="Date of Birth *"
+                                        validators={[required]}
+                                        showAutofillWarning
+                                        extraWarning={showWarning('dateOfBirth') ? 'Please verify this information' : ''}
                                     />
                                 </Grid>
-
                             </Grid>
                             <Grid item xs={12} md={6}>
                                 <FormInput
@@ -174,24 +161,12 @@ const PassengerForm = () => {
                             </Grid>
                             <Grid item xs={12} md={6}>
                                 <Grid item xs={12} md={6}>
-                                    <Controller
+                                    <DatePickerInput
                                         name="passportExpiry"
-                                        control={methods.control}
-                                        rules={{ validate: required }}
-                                        render={({ field, fieldState }) => (
-                                            <DatePicker
-                                                label="Passport Expiration Date *"
-                                                value={field.value || null}
-                                                onChange={(val) => field.onChange(val)}
-                                                slotProps={{
-                                                    textField: {
-                                                        fullWidth: true,
-                                                        error: !!fieldState.error,
-                                                        helperText: fieldState.error?.message,
-                                                    },
-                                                }}
-                                            />
-                                        )}
+                                        label="Passport Expiration Date *"
+                                        validators={[required]}
+                                        showAutofillWarning
+                                        extraWarning={showWarning('passportExpiry') ? 'Please verify this information' : ''}
                                     />
                                 </Grid>
                             </Grid>
