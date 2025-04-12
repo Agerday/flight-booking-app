@@ -50,12 +50,14 @@ const PassengerStep = () => {
 
     useEffect(() => {
         const subscription = watch(data => {
-            Object.entries(data).forEach(([key, value]) => {
-                updateForm(key, value);
+            updateForm('passenger', {
+                ...formData.passenger,
+                ...data
             });
         });
         return () => subscription.unsubscribe();
-    }, [watch, updateForm]);
+    }, [watch]);
+
 
     const onSubmit = (data) => {
         Object.keys(data).forEach((key) => updateForm(key, data[key]));

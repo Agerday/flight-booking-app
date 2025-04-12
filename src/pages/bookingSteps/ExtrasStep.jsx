@@ -46,11 +46,11 @@ const ExtrasStep = () => {
         const subscription = watch(data => {
             updateForm('extras', {
                 ...formData.extras,
-                ...data,
+                ...data
             });
         });
         return () => subscription.unsubscribe();
-    }, [watch, updateForm]);
+    }, [watch]);
 
 
     return (

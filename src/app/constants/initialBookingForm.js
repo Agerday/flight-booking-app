@@ -10,17 +10,25 @@ export const initialBookingForm = {
     selectedReturnFlight: null,
 
     // STEP 3
-    firstName: '',
-    lastName: '',
-    email: '',
-    passport: '',
-    nationality: '',
-    dateOfBirth: '',
-    gender: '',
-    passportExpiry: '',
+    passenger: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        passport: '',
+        nationality: '',
+        dateOfBirth: '',
+        gender: '',
+        passportExpiry: '',
+    },
 
     // STEP 4
-    selectedSeatInfo: '',
+    selectedSeatInfo: {
+        id: '',
+        class: '',
+        price: 0,
+        row: null,
+        seat: '',
+    },
 
     // STEP 5 - EXTRAS
     extras: {
