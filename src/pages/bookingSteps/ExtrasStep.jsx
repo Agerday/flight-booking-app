@@ -1,27 +1,33 @@
-import React, {useEffect, useRef} from 'react';
-import {Box, Button, Card, CardContent, Chip, Divider, Stack, Typography,} from '@mui/material';
+import React, { useEffect, useRef } from 'react';
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Divider,
+    Stack,
+    Typography,
+} from '@mui/material';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import CheckIcon from '@mui/icons-material/Check';
-import {FormProvider, useForm} from 'react-hook-form';
-import {useBookingForm} from '../../context/BookingFormContext';
-import {assistanceTiers} from '../../app/constants/extraTiers';
-import ToggleCard from "../../components/layout/ToggleCard/ToggledCard";
+import { FormProvider, useForm } from 'react-hook-form';
+import { useBookingForm } from '../../context/BookingFormContext';
+import { assistanceTiers } from '../../app/constants/extraTiers';
+import { extrasPricing } from '../../app/constants/extrasPricing';
+import ToggleCard from '../../components/layout/ToggleCard/ToggledCard';
 
-const ExtrasForm = () => {
-    const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
+const ExtrasStep = () => {
+    const { formData, updateForm, updateStepValidity, currentStep } = useBookingForm();
 
     const methods = useForm({
         defaultValues: {
-            assistance: formData.extras.assistance || '',
-            checkedBaggage: formData.extras.checkedBaggage || false,
-            baggageWeight: formData.extras.baggageWeight || '',
-            meals: formData.extras.meals || false,
-            baggageInsurance: formData.extras.baggageInsurance || false,
+            ...formData.extras,
         },
         mode: 'onChange',
     });
 
-    const {watch, setValue, formState: {isValid}} = methods;
+    const { watch, setValue, formState: { isValid } } = methods;
     const watched = watch();
 
     const last = useRef({
@@ -30,22 +36,26 @@ const ExtrasForm = () => {
         baggageInsurance: false,
     });
 
+    const selectedTier = watched.assistance?.type || 'normal';
+
     useEffect(() => {
         updateStepValidity(currentStep, isValid);
     }, [isValid, currentStep, updateStepValidity]);
 
     useEffect(() => {
-        const subscription = watch((data) => {
-            updateForm('extras', {...data});
+        const subscription = watch(data => {
+            updateForm('extras', {
+                ...formData.extras,
+                ...data,
+            });
         });
         return () => subscription.unsubscribe();
     }, [watch, updateForm]);
 
-    const selectedTier = watched.assistance || 'normal';
 
     return (
         <FormProvider {...methods}>
-            <Box sx={{mt: 4}}>
+            <Box sx={{ mt: 4 }}>
                 <Typography variant="h5" align="center" gutterBottom>
                     ✨ Upgrade Your Support Level
                 </Typography>
@@ -54,10 +64,9 @@ const ExtrasForm = () => {
                 </Typography>
 
                 {/* Assistance Tiers */}
-                <Stack direction={{xs: 'column', md: 'row'}} spacing={2} justifyContent="center">
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="center">
                     {assistanceTiers.map((tier) => {
                         const isSelected = selectedTier === tier.id;
-
                         return (
                             <Card
                                 key={tier.id}
@@ -78,7 +87,7 @@ const ExtrasForm = () => {
                                     },
                                 }}
                             >
-                                <CardContent sx={{flex: 1}}>
+                                <CardContent sx={{ flex: 1 }}>
                                     <Stack spacing={1} alignItems="center">
                                         <Typography variant="h6">{tier.name}</Typography>
                                         <Typography variant="subtitle1" fontWeight={500}>
@@ -89,11 +98,11 @@ const ExtrasForm = () => {
                                                 label="Most Popular (Actual Scam)"
                                                 color="success"
                                                 size="small"
-                                                icon={<FlashOnIcon/>}
-                                                sx={{mt: 1}}
+                                                icon={<FlashOnIcon />}
+                                                sx={{ mt: 1 }}
                                             />
                                         )}
-                                        <Divider sx={{width: '100%', my: 1}}/>
+                                        <Divider sx={{ width: '100%', my: 1 }} />
                                         {tier.features.map((feature, i) => (
                                             <Stack
                                                 key={i}
@@ -102,16 +111,18 @@ const ExtrasForm = () => {
                                                 alignItems="center"
                                                 width="100%"
                                             >
-                                                <CheckIcon fontSize="small" color="success"/>
+                                                <CheckIcon fontSize="small" color="success" />
                                                 <Typography variant="body2">{feature}</Typography>
                                             </Stack>
                                         ))}
                                     </Stack>
                                 </CardContent>
 
-                                <Box sx={{p: 2}}>
+                                <Box sx={{ p: 2 }}>
                                     <Button
-                                        onClick={() => setValue('assistance', tier.id, {shouldValidate: true})}
+                                        onClick={() =>
+                                            setValue('assistance', { type: tier.id }, { shouldValidate: true })
+                                        }
                                         variant={isSelected ? 'contained' : 'outlined'}
                                         color={tier.color === 'default' ? 'primary' : tier.color}
                                         fullWidth
@@ -130,59 +141,69 @@ const ExtrasForm = () => {
                         ✈️ Additional Options
                     </Typography>
 
-                    <Stack direction={{xs: 'column', md: 'row'}} spacing={2} justifyContent="center" mt={2}>
-                        {/*Checked Baggage*/}
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="center" mt={2}>
+                        {/* Checked Baggage */}
                         <ToggleCard
                             icon="🧳"
                             title="Checked Baggage"
                             description="Bring more with you by choosing your baggage weight."
-                            price={watched.baggageWeight || '20'}
+                            price={extrasPricing.checkedBaggage.weights[formData.extras.checkedBaggage?.weight
+                            || extrasPricing.checkedBaggage.defaultWeight]}
                             color="info"
-                            isSelected={watched.checkedBaggage}
-                            pulseTrigger={watched.checkedBaggage && !last.current.checkedBaggage}
+                            isSelected={watched.checkedBaggage?.selected === true}
+                            pulseTrigger={formData.extras.checkedBaggage?.selected && !last.current.checkedBaggage}
                             onToggle={() => {
-                                const toggled = !watched.checkedBaggage;
-                                setValue('checkedBaggage', toggled);
-                                if (!toggled) setValue('baggageWeight', '');
+                                const toggled = !formData.extras.checkedBaggage?.selected;
+                                const weight = toggled
+                                    ? formData.extras.checkedBaggage?.weight || extrasPricing.checkedBaggage.defaultWeight
+                                    : '';
+                                setValue('checkedBaggage', { selected: toggled, weight }, { shouldValidate: true });
                                 last.current.checkedBaggage = toggled;
                             }}
                             dropdownLabel="Select your baggage weight:"
-                            dropdownOptions={[
-                                {value: '20', label: '20kg', price: 20},
-                                {value: '25', label: '25kg', price: 25},
-                                {value: '30', label: '30kg', price: 30},
-                            ]}
-                            dropdownValue={watched.baggageWeight}
-                            onDropdownChange={(e) => setValue('baggageWeight', e.target.value)}
+                            dropdownOptions={Object.entries(extrasPricing.checkedBaggage.weights).map(([val, price]) => ({
+                                value: val,
+                                label: `${val}kg`,
+                                price,
+                            }))}
+                            dropdownValue={formData.extras.checkedBaggage?.weight || extrasPricing.checkedBaggage.defaultWeight}
+                            onDropdownChange={(e) => {
+                                const weight = e.target.value;
+                                setValue('checkedBaggage', {
+                                    ...formData.extras.checkedBaggage,
+                                    weight,
+                                }, { shouldValidate: true });
+                            }}
                         />
 
-                        {/*Meal*/}
+                        {/* Meal */}
                         <ToggleCard
                             icon="🍽️"
                             title="Meal"
                             description="Enjoy a hot meal on board. Vegetarian and vegan options available."
-                            price={12}
+                            price={extrasPricing.meals}
                             color="secondary"
-                            isSelected={watched.meals}
-                            pulseTrigger={watched.meals && !last.current.meals}
+                            isSelected={watched.meals?.selected === true}
+                            pulseTrigger={formData.extras.meals?.selected && !last.current.meals}
                             onToggle={() => {
-                                const toggled = !watched.meals;
-                                setValue('meals', toggled);
+                                const toggled = !formData.extras.meals?.selected;
+                                setValue('meals', { selected: toggled }, { shouldValidate: true });
                                 last.current.meals = toggled;
-                            }}></ToggleCard>
+                            }}
+                        />
 
-                        {/*Baggage Insurance*/}
+                        {/* Baggage Insurance */}
                         <ToggleCard
                             icon="🛡️"
                             title="Baggage Insurance"
                             description="Protect your baggage up to €1000 from loss or damage."
-                            price={8}
+                            price={extrasPricing.baggageInsurance}
                             color="warning"
-                            isSelected={watched.baggageInsurance}
-                            pulseTrigger={watched.baggageInsurance && !last.current.baggageInsurance}
+                            isSelected={watched.baggageInsurance?.selected === true}
+                            pulseTrigger={formData.extras.baggageInsurance?.selected && !last.current.baggageInsurance}
                             onToggle={() => {
-                                const toggled = !watched.baggageInsurance;
-                                setValue('baggageInsurance', toggled);
+                                const toggled = !formData.extras.baggageInsurance?.selected;
+                                setValue('baggageInsurance', { selected: toggled }, { shouldValidate: true });
                                 last.current.baggageInsurance = toggled;
                             }}
                         />
@@ -193,4 +214,4 @@ const ExtrasForm = () => {
     );
 };
 
-export default ExtrasForm;
+export default ExtrasStep;

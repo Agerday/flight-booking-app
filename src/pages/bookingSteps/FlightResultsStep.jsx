@@ -8,7 +8,7 @@ import mockFlights from '../../data/mockFlights';
 import {filterFlights} from '../../app/utils/flightUtils';
 import {BookingSteps} from '../../app/constants/bookingSteps';
 
-const FlightResults = () => {
+const FlightResultsStep = () => {
     const {formData, updateForm, updateStepValidity, currentStep, setCurrentStep} = useBookingForm();
     const methods = useForm({
         defaultValues: {
@@ -64,4 +64,4 @@ const FlightResults = () => {
     );
 };
 
-export default FlightResults;
+export default FlightResultsStep;

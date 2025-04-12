@@ -38,6 +38,7 @@ export const BookingFormProvider = ({ children }) => {
             ...prev,
             [field]: value,
         }));
+        console.log(formData)
     };
 
     const updateStepValidity = (step, isValid) => {

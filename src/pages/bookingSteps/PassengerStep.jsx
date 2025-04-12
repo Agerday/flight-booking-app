@@ -13,7 +13,7 @@ import {genderOptions} from '../../app/constants/genderOptions';
 import FrostedCard from "../../components/layout/FrostedCard/FrostedCard";
 import DatePickerInput from "../../components/ui/DatepickerInput/DatepickerInput";
 
-const PassengerForm = () => {
+const PassengerStep = () => {
     const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
     const navigate = useNavigate();
     const [autoFilledFields, setAutoFilledFields] = useState({});
@@ -187,4 +187,4 @@ const PassengerForm = () => {
     );
 };
 
-export default PassengerForm;
+export default PassengerStep;

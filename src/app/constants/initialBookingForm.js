@@ -1,5 +1,5 @@
 export const initialBookingForm = {
-    /*STEP 1*/
+    // STEP 1
     origin: '',
     destination: '',
     departure: '',
@@ -9,7 +9,7 @@ export const initialBookingForm = {
     selectedOutboundFlight: null,
     selectedReturnFlight: null,
 
-    /*STEP 3*/
+    // STEP 3
     firstName: '',
     lastName: '',
     email: '',
@@ -19,17 +19,27 @@ export const initialBookingForm = {
     gender: '',
     passportExpiry: '',
 
-    /*STEP 4*/
+    // STEP 4
     selectedSeatInfo: '',
 
-    /*STEP 5*/
+    // STEP 5 - EXTRAS
     extras: {
-        insurance: '',
-        assistance: '',
-        checkedBaggage: false,
-        meals: false,
-        baggageInsurance: false,
-        baggageWeight: '',
+        assistance: {
+            type: '',
+            price: 0,
+        },
+        checkedBaggage: {
+            selected: false,
+            weight: '',
+            price: 0,
+        },
+        meals: {
+            selected: false,
+            price: 0,
+        },
+        baggageInsurance: {
+            selected: false,
+            price: 0,
+        }
     }
-
 };

@@ -38,7 +38,6 @@ const ToggleCard = ({
                         onDropdownChange,
                         dropdownLabel,
                     }) => {
-    // Automatically select the first dropdown option when selected and none is set
     useEffect(() => {
         if (isSelected && dropdownOptions?.length > 0 && !dropdownValue) {
             onDropdownChange({target: {value: dropdownOptions[0].value}});

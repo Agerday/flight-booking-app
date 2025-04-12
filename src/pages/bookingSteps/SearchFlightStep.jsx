@@ -12,7 +12,7 @@ import {getAvailableDepartureDates, getFilteredLocations} from '../../app/utils/
 import mockFlights from '../../data/mockFlights';
 import {required} from '../../app/utils/validators';
 
-const SearchForm = () => {
+const SearchFlightStep = () => {
     const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
     const methods = useForm({
         defaultValues: {
@@ -176,4 +176,4 @@ const SearchForm = () => {
     );
 };
 
-export default SearchForm;
+export default SearchFlightStep;

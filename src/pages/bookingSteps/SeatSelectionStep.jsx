@@ -3,7 +3,7 @@ import {Box, Typography} from '@mui/material';
 import SeatMap from '../../components/booking/SeatMap/SeatMap';
 import {useBookingForm} from '../../context/BookingFormContext';
 
-const SeatSelection = () => {
+const SeatSelectionStep = () => {
     const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
     const handleSeatSelect = (seat) => {
         updateForm('selectedSeatInfo', seat);
@@ -35,4 +35,4 @@ const SeatSelection = () => {
     );
 };
 
-export default SeatSelection;
+export default SeatSelectionStep;

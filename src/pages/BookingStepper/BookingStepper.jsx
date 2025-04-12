@@ -1,14 +1,15 @@
 import React, {useEffect} from 'react';
 import {useBookingForm} from '../../context/BookingFormContext';
 import GenericStepper from '../../components/ui/GenericStepper/GenericStepper';
-import FlightResults from '../bookingSteps/FlightResults';
-import PassengerForm from '../bookingSteps/PassengerForm';
-import SeatSelection from '../bookingSteps/SeatSelection';
-import Confirmation from '../bookingSteps/Confirmation';
+import FlightResultsStep from '../bookingSteps/FlightResultsStep';
+import PassengerStep from '../bookingSteps/PassengerStep';
+import SeatSelectionStep from '../bookingSteps/SeatSelectionStep';
+import Confirmation from '../bookingSteps/ConfirmationStep';
 import {BookingSteps} from '../../app/constants/bookingSteps';
 import {useStepNavigation} from '../../hooks/useStepNavigation';
-import SearchForm from "../bookingSteps/SearchForm";
-import ExtrasForm from "../bookingSteps/ExtrasForm";
+import SearchFlightStep from "../bookingSteps/SearchFlightStep";
+import ExtrasStep from "../bookingSteps/ExtrasStep";
+import PaymentStep from "../bookingSteps/PaymentStep";
 
 const BookingStepper = () => {
     const {currentStep, setCurrentStep, isValid} = useBookingForm();
@@ -19,11 +20,12 @@ const BookingStepper = () => {
     }, [currentStep]);
 
     const renderMap = {
-        [BookingSteps.SEARCH]: <SearchForm/>,
-        [BookingSteps.RESULTS]: <FlightResults/>,
-        [BookingSteps.PASSENGER]: <PassengerForm/>,
-        [BookingSteps.SEAT]: <SeatSelection/>,
-        [BookingSteps.EXTRAS]: <ExtrasForm/>,
+        [BookingSteps.SEARCH]: <SearchFlightStep/>,
+        [BookingSteps.RESULTS]: <FlightResultsStep/>,
+        [BookingSteps.PASSENGER]: <PassengerStep/>,
+        [BookingSteps.SEAT]: <SeatSelectionStep/>,
+        [BookingSteps.EXTRAS]: <ExtrasStep/>,
+        [BookingSteps.PAYMENT]: <PaymentStep/>,
         [BookingSteps.CONFIRM]: <Confirmation/>,
     };
 
@@ -39,6 +41,8 @@ const BookingStepper = () => {
                 [BookingSteps.SEARCH]: 'Search Flights',
                 [BookingSteps.PASSENGER]: 'Continue to seat selection',
                 [BookingSteps.SEAT]: 'Validate Seat',
+                [BookingSteps.EXTRAS]: 'Continue to payment',
+                [BookingSteps.PAYMENT]: 'Confirm Booking',
             }}
             hideNextButton={{
                 [BookingSteps.RESULTS]: true,
