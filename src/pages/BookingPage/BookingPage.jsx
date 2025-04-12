@@ -1,12 +1,14 @@
 import React from 'react';
-import {useTheme} from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import BookingStepper from '../BookingStepper/BookingStepper';
 import BookingSummaryBox from '../../components/booking/BookingSummary/BookingSummary';
-import {useBookingForm} from '../../context/BookingFormContext';
+import { useBookingForm } from '../../context/BookingFormContext';
 
 const BookingPage = () => {
-    const {formData} = useBookingForm();
+    const { formData } = useBookingForm();
     const theme = useTheme();
+
+    const hasSummary = !!formData.flight?.id;
 
     return (
         <div
@@ -24,27 +26,28 @@ const BookingPage = () => {
                     alignItems: 'flex-start',
                     width: '100%',
                     maxWidth: '1200px',
-                    gap: '1.2rem',
-                    marginRight: '-20rem'
+                    gap: '1.5rem',
+                    transform: hasSummary ? 'translateX(12rem)' : 'none',
+                    transition: 'transform 0.3s ease',
                 }}
             >
                 {/* Stepper */}
-                <div style={{flexGrow: 1}}>
-                    <BookingStepper/>
+                <div style={{ flexGrow: 1 }}>
+                    <BookingStepper />
                 </div>
 
                 {/* Summary */}
-                {formData.flight && (
+                {hasSummary && (
                     <div
                         style={{
                             width: '250px',
                             minWidth: '250px',
                             position: 'sticky',
-                            top: 32,
+                            top: 40,
                             flexShrink: 0,
                         }}
                     >
-                        <BookingSummaryBox/>
+                        <BookingSummaryBox />
                     </div>
                 )}
             </div>
