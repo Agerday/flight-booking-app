@@ -46,6 +46,7 @@ const BookingStepper = () => {
             }}
             hideNextButton={{
                 [BookingSteps.RESULTS]: true,
+                [BookingSteps.PAYMENT]: true
             }}
             firstStepKey={BookingSteps.SEARCH}
             background='url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e")'

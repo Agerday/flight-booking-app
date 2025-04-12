@@ -56,7 +56,7 @@ const PaymentPage = ({ totalAmount = 0, onSubmit }) => {
                     </Grid>
                     <Box mt={2}>
                         <Button type="submit" variant="contained" color="primary" fullWidth>
-                            Pay €{totalAmount}
+                            Pay €{totalAmount} & Confirm Booking
                         </Button>
                     </Box>
                 </CardContent>
