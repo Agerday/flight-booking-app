@@ -8,7 +8,7 @@ import {BookingFormProvider} from './context/BookingFormContext';
 import PageWrapper from "./components/layout/PageWrapper/PageWrapper";
 import HomePage from "./pages/HomePage/HomePage";
 
-const BookingFlow = lazy(() => import('./pages/BookingStepper/BookingStepper'));
+const BookingPage = lazy(() => import('./pages/BookingPage/BookingPage'));
 const MyBookings = lazy(() => import('./pages/MyBookings/MyBookings'));
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
                         <Suspense fallback={<div>Loading...</div>}>
                             <Routes>
                                 <Route path="/" element={<HomePage/>}/>
-                                <Route path="/book" element={<BookingFlow/>}/>
+                                <Route path="/book" element={<BookingPage/>}/>
                                 <Route path="/my-bookings" element={<PageWrapper><MyBookings/></PageWrapper>}/>
                             </Routes>
                         </Suspense>

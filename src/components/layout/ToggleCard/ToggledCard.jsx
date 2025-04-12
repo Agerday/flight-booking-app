@@ -1,15 +1,5 @@
 import React, {useEffect} from 'react';
-import {
-    Button,
-    Card,
-    CardContent,
-    Chip,
-    MenuItem,
-    Select,
-    Stack,
-    Typography,
-    Box,
-} from '@mui/material';
+import {Box, Button, Card, CardContent, Chip, MenuItem, Select, Stack, Typography,} from '@mui/material';
 import {keyframes} from '@emotion/react';
 
 const pulse = keyframes`

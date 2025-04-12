@@ -1,4 +1,4 @@
-import {required, isEmail, minLength, hasNumber} from '../utils/validators';
+import {hasNumber, isEmail, minLength, required} from '../utils/validators';
 
 export const passengerFormSchema = {
     firstName: [required],

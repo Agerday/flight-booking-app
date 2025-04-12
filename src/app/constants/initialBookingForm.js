@@ -6,7 +6,24 @@ export const initialBookingForm = {
     returnDate: '',
     tripType: 'oneway',
     passengers: 1,
-    selectedOutboundFlight: null,
+
+    flight: {
+        id: null,
+        from: '',
+        to: '',
+        airline: '',
+        departureTime: '',
+        arrivalTime: '',
+        stops: 0,
+        price: 0,
+        selectedClass: '',
+        prices: {
+            economy: 0,
+            premium: 0,
+            business: 0,
+        }
+    },
+
     selectedReturnFlight: null,
 
     // STEP 3
@@ -22,7 +39,7 @@ export const initialBookingForm = {
     },
 
     // STEP 4
-    selectedSeatInfo: {
+    seat: {
         id: '',
         class: '',
         price: 0,

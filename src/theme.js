@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material/styles';
+import {createTheme} from '@mui/material/styles';
 
 const airlineTheme = createTheme({
     palette: {
@@ -22,12 +22,8 @@ const airlineTheme = createTheme({
     },
     typography: {
         fontFamily: ['"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'].join(','),
-        h4: {
-            fontWeight: 600,
-        },
-        h6: {
-            fontWeight: 500,
-        },
+        h4: { fontWeight: 600 },
+        h6: { fontWeight: 500 },
     },
     components: {
         MuiTextField: {
@@ -43,6 +39,28 @@ const airlineTheme = createTheme({
                     fontWeight: '600',
                 },
             },
+        },
+    },
+
+    layout: {
+        containerPadding: '2rem',
+        contentMaxWidth: '900px',
+        summaryWidth: '300px',
+        stepperFlex: {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+            gap: '2rem',
+            padding: '2rem',
+        },
+    },
+    backgrounds: {
+        beach: 'url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e") no-repeat center center',
+        beachCover: {
+            background: 'url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e") no-repeat center center',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
         },
     },
 });

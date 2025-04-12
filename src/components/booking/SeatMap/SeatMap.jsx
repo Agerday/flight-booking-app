@@ -1,14 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-    Box,
-    Fade,
-    Grid,
-    Paper,
-    Slide,
-    Stack,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import React, {useEffect, useMemo, useState} from 'react';
+import {Box, Fade, Grid, Paper, Slide, Stack, Tooltip, Typography,} from '@mui/material';
 
 const rows = 12;
 const leftSeats = ['A', 'B', 'C'];

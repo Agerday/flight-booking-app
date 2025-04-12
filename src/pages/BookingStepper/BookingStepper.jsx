@@ -34,7 +34,6 @@ const BookingStepper = () => {
             currentStep={currentStep}
             onNext={next}
             onBack={back}
-            isFinal={currentStep === BookingSteps.CONFIRM}
             renderMap={renderMap}
             disableNext={!isValid}
             customLabels={{
@@ -46,10 +45,10 @@ const BookingStepper = () => {
             }}
             hideNextButton={{
                 [BookingSteps.RESULTS]: true,
-                [BookingSteps.PAYMENT]: true
+                [BookingSteps.PAYMENT]: true,
+                [BookingSteps.CONFIRM]: true
             }}
             firstStepKey={BookingSteps.SEARCH}
-            background='url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e")'
         />
     );
 };

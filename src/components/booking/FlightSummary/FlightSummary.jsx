@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-    Typography,
-    Box,
-    Stack,
-    Divider,
-    Grid,
-} from '@mui/material';
+import {Box, Divider, Grid, Stack, Typography,} from '@mui/material';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import FlightLandIcon from '@mui/icons-material/FlightLand';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';

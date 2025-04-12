@@ -1,4 +1,4 @@
-import { required } from '../utils/validators';
+import {required} from '../utils/validators';
 
 export const searchFormSchema = {
     origin: [required],

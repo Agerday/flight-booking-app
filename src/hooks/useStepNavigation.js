@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { BookingStepOrder } from '../app/constants/bookingSteps';
+import {useCallback} from 'react';
+import {BookingStepOrder} from '../app/constants/bookingSteps';
 
 export const useStepNavigation = (currentStep, setCurrentStep) => {
   const currentIndex = BookingStepOrder.indexOf(currentStep);

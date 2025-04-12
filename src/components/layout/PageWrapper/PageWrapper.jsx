@@ -1,6 +1,6 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
-import { Box, Fade } from '@mui/material';
+import {useLocation} from 'react-router-dom';
+import {Box, Fade} from '@mui/material';
 
 const PageWrapper = ({ children }) => {
     const location = useLocation();

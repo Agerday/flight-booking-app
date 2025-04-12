@@ -6,12 +6,12 @@ import {useBookingForm} from '../../context/BookingFormContext';
 const SeatSelectionStep = () => {
     const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
     const handleSeatSelect = (seat) => {
-        updateForm('selectedSeatInfo', seat);
+        updateForm('seat', seat);
     };
 
     useEffect(() => {
-        updateStepValidity(currentStep, !!formData.selectedSeatInfo);
-    }, [currentStep, formData.selectedSeatInfo, updateStepValidity]);
+        updateStepValidity(currentStep, !!formData.seat);
+    }, [currentStep, formData.seat, updateStepValidity]);
 
 
     return (
@@ -20,15 +20,15 @@ const SeatSelectionStep = () => {
                 ✈️ Select Your Seat
             </Typography>
             <SeatMap
-                selectedSeat={formData.selectedSeatInfo}
+                selectedSeat={formData.seat}
                 onSeatSelect={handleSeatSelect}
             />
 
-            {formData.selectedSeatInfo && (
+            {formData.seat && (
                 <Typography mt={3} variant="h6" color="primary">
-                    You selected <strong>{formData.selectedSeatInfo.id}</strong> —{' '}
-                    <em>{formData.selectedSeatInfo.class} class</em> — $
-                    {formData.selectedSeatInfo.price}
+                    You selected <strong>{formData.seat.id}</strong> —{' '}
+                    <em>{formData.seat.class} class</em> — $
+                    {formData.seat.price}
                 </Typography>
             )}
         </Box>

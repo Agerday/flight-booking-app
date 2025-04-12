@@ -35,10 +35,10 @@ const FlightResultsStep = () => {
 
     const handleSelectFlight = (flight) => {
         if (!isReturnTrip) {
-            updateForm('selectedOutboundFlight', flight);
+            updateForm('flight', flight);
             setCurrentStep(BookingSteps.PASSENGER);
-        } else if (!formData.selectedOutboundFlight) {
-            updateForm('selectedOutboundFlight', flight);
+        } else if (!formData.flight) {
+            updateForm('flight', flight);
         } else {
             updateForm('selectedReturnFlight', flight);
             setCurrentStep(BookingSteps.PASSENGER);
