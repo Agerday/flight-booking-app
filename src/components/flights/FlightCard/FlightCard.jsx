@@ -67,7 +67,7 @@ const FlightCard = ({flight, onSelect}) => {
                             onSelect?.({
                                 ...flight,
                                 selectedClass: classType,
-                                selectedPrice: price,
+                                price: price,
                             })
                         }
                     >

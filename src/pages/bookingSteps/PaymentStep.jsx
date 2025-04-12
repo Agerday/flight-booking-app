@@ -16,8 +16,8 @@ import CheckIcon from '@mui/icons-material/Check';
 import LuggageIcon from '@mui/icons-material/Luggage';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import ShieldIcon from '@mui/icons-material/Shield';
-import PaymentPage from "../../components/PaymentPage/PaymentPage";
-import {enrichExtras} from "../../app/utils/enrichExtras";
+import PaymentPage from '../PaymentPage/PaymentPage';
+import {generatePriceSummary} from "../../app/utils/priceSummaryGenerator";
 
 const iconMap = {
     meals: <RestaurantIcon fontSize="small" />,
@@ -25,37 +25,15 @@ const iconMap = {
     checkedBaggage: <LuggageIcon fontSize="small" />,
     assistance: <CheckIcon fontSize="small" color="info" />,
     insurance: <ShieldIcon fontSize="small" color="warning" />,
+    selectedSeat: <CheckIcon fontSize="small" color="secondary" />,
+    selectedOutboundFlight: <CheckIcon fontSize="small" color="success" />,
 };
 
 const PaymentStep = () => {
     const { formData, updateStepValidity, currentStep } = useBookingForm();
-    const enrichedExtras = enrichExtras(formData.extras);
 
-    const itemList = [];
-
-    if (formData.selectedOutboundFlight?.selectedPrice) {
-        const f = formData.selectedOutboundFlight;
-        itemList.push({
-            label: `Flight: ${f.from} → ${f.to} (${f.selectedClass})`,
-            price: f.selectedPrice,
-            icon: <CheckIcon fontSize="small" color="success" />,
-        });
-    }
-
-    Object.entries(enrichedExtras).forEach(([key, val]) => {
-        if (val?.price > 0) {
-            const label = key === 'assistance'
-                ? `Assistance Tier: ${val.type}`
-                : key === 'checkedBaggage'
-                    ? `Checked Baggage (${val.weight}kg)`
-                    : key.charAt(0).toUpperCase() + key.slice(1);
-
-            itemList.push({
-                label,
-                price: val.price,
-                icon: iconMap[key] || <CheckIcon fontSize="small" color="success" />,
-            });
-        }
+    const itemList = generatePriceSummary(formData, {
+        icons: iconMap,
     });
 
     const total = itemList.reduce((sum, item) => sum + item.price, 0);
