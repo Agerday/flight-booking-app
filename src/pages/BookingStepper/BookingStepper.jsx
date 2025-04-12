@@ -48,6 +48,8 @@ const BookingStepper = () => {
                 [BookingSteps.PAYMENT]: true,
                 [BookingSteps.CONFIRM]: true
             }}
+
+            //TODO: REFACTOR THIS TO REMOVE PREVIOUS ON CONFIRMATION PAGE
             firstStepKey={BookingSteps.SEARCH}
         />
     );
