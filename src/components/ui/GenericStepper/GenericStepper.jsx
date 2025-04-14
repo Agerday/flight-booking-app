@@ -1,7 +1,12 @@
 import React from 'react';
-import {Box, Button, IconButton} from '@mui/material';
+import { Box, Button, IconButton } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import CenteredPageLayout from "../../layout/CenteredPageLayout/CenteredPageLayout";
+import CenteredPageLayout from '../../layout/CenteredPageLayout/CenteredPageLayout';
+
+const shouldHideButton = (config, currentStep) => {
+    if (typeof config === 'boolean') return config;
+    return !!config[currentStep];
+};
 
 const GenericStepper = ({
                             currentStep,
@@ -11,32 +16,30 @@ const GenericStepper = ({
                             disableNext = false,
                             customLabels = {},
                             hideNextButton = {},
+                            hidePreviousButton = {},
                             background = undefined,
                             useCardWrapper = true,
-                            firstStepKey = null,
                         }) => {
-    const isFirstStep = currentStep === firstStepKey;
     const label = customLabels[currentStep] || 'Next';
-    const shouldHideButton = typeof hideNextButton === 'boolean'
-        ? hideNextButton
-        : !!hideNextButton[currentStep];
+    const nextHidden = shouldHideButton(hideNextButton, currentStep);
+    const prevHidden = shouldHideButton(hidePreviousButton, currentStep);
 
     return (
         <CenteredPageLayout background={background} useCard={useCardWrapper}>
             {/* Back Button */}
-            {!isFirstStep && typeof onBack === 'function' && (
+            {!prevHidden && typeof onBack === 'function' && (
                 <IconButton onClick={onBack} sx={{ mb: 2 }}>
                     <ArrowBackIosNewIcon />
                 </IconButton>
             )}
 
             {/* Step Content */}
-            <Box sx={{ mb: shouldHideButton ? 0 : 4 }}>
+            <Box sx={{ mb: nextHidden ? 0 : 4 }}>
                 {renderMap[currentStep]}
             </Box>
 
             {/* Next Button */}
-            {!shouldHideButton && (
+            {!nextHidden && (
                 <Button
                     variant="contained"
                     onClick={onNext}

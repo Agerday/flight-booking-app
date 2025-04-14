@@ -43,14 +43,14 @@ const BookingStepper = () => {
                 [BookingSteps.EXTRAS]: 'Continue to payment',
                 [BookingSteps.PAYMENT]: 'Confirm Booking',
             }}
-            hideNextButton={{
+            hidePreviousButton={{
+                [BookingSteps.SEARCH]: true,
+                [BookingSteps.CONFIRM]: true,
+            }}  hideNextButton={{
                 [BookingSteps.RESULTS]: true,
                 [BookingSteps.PAYMENT]: true,
                 [BookingSteps.CONFIRM]: true
             }}
-
-            //TODO: REFACTOR THIS TO REMOVE PREVIOUS ON CONFIRMATION PAGE
-            firstStepKey={BookingSteps.SEARCH}
         />
     );
 };
