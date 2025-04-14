@@ -140,12 +140,12 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
 
     const renderSeatColumn = (seatGroup) =>
         seatGroup.map((seat) => (
-            <Grid item key={seat}>
+            <Grid key={seat}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     {Array.from({ length: rows }, (_, i) => {
                         const row = i + 1;
                         return (
-                            <Grid item key={`${row}${seat}`}>
+                            <Grid key={`${row}${seat}`}>
                                 {renderSeat(row, seat)}
                             </Grid>
                         );
@@ -181,10 +181,10 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
             </Slide>
 
             <Grid container justifyContent="center" alignItems="center" spacing={2}>
-                <Grid item>
+                <Grid>
                     <Grid container direction="column" spacing={1} alignItems="flex-end">
                         {Array.from({ length: rows }, (_, i) => (
-                            <Grid item key={`rowNum-${i + 1}`}>
+                            <Grid key={`rowNum-${i + 1}`}>
                                 <Typography
                                     variant="caption"
                                     sx={{ opacity: 0.6, minWidth: 20 }}
@@ -196,7 +196,7 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                 </Grid>
 
                 {renderSeatColumn(leftSeats)}
-                <Grid item>
+                <Grid>
                     <Box sx={{ width: 24 }} />
                 </Grid>
                 {renderSeatColumn(rightSeats)}

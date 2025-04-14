@@ -12,13 +12,13 @@ const FlightResultsStep = () => {
     const {formData, updateForm, updateStepValidity, currentStep, setCurrentStep} = useBookingForm();
     const methods = useForm({
         defaultValues: {
-            selectedFlight: formData.selectedFlight || null,
+            ...formData.flight
         },
         mode: 'onChange',
     });
 
-    const {watch, setValue, formState: {isValid}} = methods;
-    const {origin: from, destination: to, departure: departureDate} = formData;
+    const {watch, formState: {isValid}} = methods;
+    const {origin: from, destination: to, departure: departureDate} = formData.initialInfos;
     const flights = filterFlights(mockFlights, from, to, departureDate);
     const isReturnTrip = formData.tripType === 'return';
 
@@ -28,7 +28,7 @@ const FlightResultsStep = () => {
 
     useEffect(() => {
         const subscription = watch((data) => {
-            updateForm('selectedFlight', data.selectedFlight);
+            updateForm('flight', data.flight);
         });
         return () => subscription.unsubscribe();
     }, [watch, updateForm]);
@@ -40,7 +40,7 @@ const FlightResultsStep = () => {
         } else if (!formData.flight) {
             updateForm('flight', flight);
         } else {
-            updateForm('selectedReturnFlight', flight);
+            updateForm('returnFlight', flight);
             setCurrentStep(BookingSteps.PASSENGER);
         }
     };

@@ -32,7 +32,7 @@ const PaymentStep = () => {
 
     return (
         <Grid container spacing={4} justifyContent="center" alignItems="flex-start">
-            <Grid item xs={12} md={6}>
+            <Grid size={6}>
                 <Typography variant="h5" gutterBottom>
                     💳 Complete Your Payment
                 </Typography>

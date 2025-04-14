@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, IconButton } from '@mui/material';
+import {Box, Button, IconButton} from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import CenteredPageLayout from '../../layout/CenteredPageLayout/CenteredPageLayout';
 

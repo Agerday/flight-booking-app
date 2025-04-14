@@ -1,19 +1,24 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Box, Button, Card, CardContent, Grid, InputAdornment, TextField, Typography,} from '@mui/material';
 import {Controller, useForm} from 'react-hook-form';
 import {combineValidators, isCardNumber, isCVV, isFutureDate, required,} from '../../app/utils/validators';
 import {detectCardType} from '../../app/utils/creditCardUtils';
-import {useBookingForm} from '../../context/BookingFormContext';
 
 
 const PaymentPage = ({totalAmount = 0, onSubmit}) => {
-    const {updateStepValidity, currentStep} = useBookingForm();
-    const {control, handleSubmit, formState: {isValid}} = useForm({mode: 'onChange'});
+    const {
+        control,
+        handleSubmit
+    } = useForm({
+        mode: 'onChange',
+        defaultValues: {
+            cardName: '',
+            cardNumber: '',
+            expirationDate: '',
+            cvv: ''
+        }
+    });
     const [cardType, setCardType] = useState(null);
-
-    // useEffect(() => {
-    //     updateStepValidity(currentStep, isValid);
-    // }, [isValid, currentStep, updateStepValidity]);
 
     const handleCardChange = (value) => {
         setCardType(detectCardType(value));
@@ -71,7 +76,7 @@ const PaymentPage = ({totalAmount = 0, onSubmit}) => {
                                 required
                                 error={!!fieldState.error}
                                 helperText={fieldState.error?.message}
-                                inputProps={{inputMode: 'numeric', maxLength: 19}}
+                                slotProps={{inputMode: 'numeric', maxLength: 19}}
                                 onChange={(e) => {
                                     const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
                                     const formatted = raw.replace(/(.{4})/g, '$1 ').trim();
@@ -87,7 +92,7 @@ const PaymentPage = ({totalAmount = 0, onSubmit}) => {
 
                     {/* Expiry and CVV */}
                     <Grid container spacing={2}>
-                        <Grid item xs={6}>
+                        <Grid size={6}>
                             <Controller
                                 name="expirationDate"
                                 control={control}
@@ -103,7 +108,7 @@ const PaymentPage = ({totalAmount = 0, onSubmit}) => {
                                         required
                                         error={!!fieldState.error}
                                         helperText={fieldState.error?.message}
-                                        inputProps={{inputMode: 'numeric', maxLength: 5}}
+                                        slotProps={{inputMode: 'numeric', maxLength: 5}}
                                         onChange={(e) => {
                                             let val = e.target.value.replace(/[^\d]/g, '').slice(0, 4);
                                             if (val.length > 2) val = val.slice(0, 2) + '/' + val.slice(2);
@@ -113,7 +118,7 @@ const PaymentPage = ({totalAmount = 0, onSubmit}) => {
                                 )}
                             />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={6}>
                             <Controller
                                 name="cvv"
                                 control={control}
@@ -128,7 +133,7 @@ const PaymentPage = ({totalAmount = 0, onSubmit}) => {
                                         required
                                         error={!!fieldState.error}
                                         helperText={fieldState.error?.message}
-                                        inputProps={{inputMode: 'numeric', maxLength: 3}}
+                                        slotProps={{inputMode: 'numeric', maxLength: 3}}
                                         onChange={(e) => {
                                             const val = e.target.value.replace(/\D/g, '').slice(0, 3);
                                             field.onChange(val);

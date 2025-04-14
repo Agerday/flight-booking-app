@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTheme } from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import BookingStepper from '../BookingStepper/BookingStepper';
 import BookingSummaryBox from '../../components/booking/BookingSummary/BookingSummary';
-import { useBookingForm } from '../../context/BookingFormContext';
+import {useBookingForm} from '../../context/BookingFormContext';
 
 const BookingPage = () => {
     const { formData } = useBookingForm();

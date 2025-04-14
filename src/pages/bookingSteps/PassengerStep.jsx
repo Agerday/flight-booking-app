@@ -20,14 +20,7 @@ const PassengerStep = () => {
 
     const methods = useForm({
         defaultValues: {
-            firstName: formData.firstName || '',
-            lastName: formData.lastName || '',
-            email: formData.email || '',
-            nationality: formData.nationality || '',
-            gender: formData.gender || '',
-            dateOfBirth: formData.dateOfBirth || '',
-            passport: formData.passport || '',
-            passportExpiry: formData.passportExpiry || '',
+            ...formData.passenger,
         },
         mode: 'onBlur',
         reValidateMode: 'onChange',
@@ -56,7 +49,7 @@ const PassengerStep = () => {
             });
         });
         return () => subscription.unsubscribe();
-    }, [watch]);
+    }, [watch, formData.passenger, updateForm]);
 
 
     const onSubmit = (data) => {
@@ -88,63 +81,62 @@ const PassengerStep = () => {
                     {/* Section 1: Personal Info */}
                     <FrostedCard>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
-                                <FormInput
-                                    name="firstName"
-                                    label="First Name *"
-                                    placeholder="e.g. Adrien"
-                                    icon={<CreditCard/>}
-                                    validators={[required]}
-                                    showAutofillWarning
-                                    extraWarning={showWarning('firstName') ? 'Please verify this information' : ''}
-                                />
-                            </Grid>
-                            <Grid item size={4}>
-                                <FormInput
-                                    name="lastName"
-                                    label="Last Name *"
-                                    placeholder="e.g. Gerday"
-                                    icon={<CreditCard/>}
-                                    validators={[required]}
-                                    showAutofillWarning
-                                    extraWarning={showWarning('lastName') ? 'Please verify this information' : ''}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <FormInput
-                                    name="email"
-                                    label="Email *"
-                                    placeholder="e.g. adrien.gerday@airline.com"
-                                    icon={<Email/>}
-                                    type="email"
-                                    validators={[required, isEmail]}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <FormInput
-                                    name="nationality"
-                                    label="Nationality *"
-                                    placeholder="e.g. Belgium"
-                                    icon={<Public/>}
-                                    validators={[required]}
-                                    showAutofillWarning
-                                    extraWarning={showWarning('nationality') ? 'Please verify this information' : ''}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <FormInput
-                                    name="gender"
-                                    label="Gender *"
-                                    icon={<WcIcon/>}
-                                    validators={[required]}
-                                    isSelect
-                                    options={genderOptions}
-                                    showAutofillWarning
-                                    extraWarning={showWarning('gender') ? 'Please verify this information' : ''}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Grid item xs={12} md={6}>
+                                <Grid size={6}>
+                                    <FormInput
+                                        name="firstName"
+                                        label="First Name *"
+                                        placeholder="e.g. Adrien"
+                                        icon={<CreditCard/>}
+                                        validators={[required]}
+                                        showAutofillWarning
+                                        extraWarning={showWarning('firstName') ? 'Please verify this information' : ''}
+                                    />
+                                </Grid>
+                                <Grid size={6}>
+                                    <FormInput
+                                        name="lastName"
+                                        label="Last Name *"
+                                        placeholder="e.g. Gerday"
+                                        icon={<CreditCard/>}
+                                        validators={[required]}
+                                        showAutofillWarning
+                                        extraWarning={showWarning('lastName') ? 'Please verify this information' : ''}
+                                    />
+                                </Grid>
+                                <Grid size={6}>
+                                    <FormInput
+                                        name="email"
+                                        label="Email *"
+                                        placeholder="e.g. adrien.gerday@airline.com"
+                                        icon={<Email/>}
+                                        type="email"
+                                        validators={[required, isEmail]}
+                                    />
+                                </Grid>
+                                <Grid size={3}>
+                                    <FormInput
+                                        name="nationality"
+                                        label="Nationality *"
+                                        placeholder="e.g. Belgium"
+                                        icon={<Public/>}
+                                        validators={[required]}
+                                        showAutofillWarning
+                                        extraWarning={showWarning('nationality') ? 'Please verify this information' : ''}
+                                    />
+                                </Grid>
+                                <Grid size={3}>
+                                    <FormInput
+                                        name="gender"
+                                        label="Gender *"
+                                        icon={<WcIcon/>}
+                                        validators={[required]}
+                                        isSelect
+                                        options={genderOptions}
+                                        showAutofillWarning
+                                        extraWarning={showWarning('gender') ? 'Please verify this information' : ''}
+                                    />
+                                </Grid>
+                                <Grid size={4}>
                                     <DatePickerInput
                                         name="dateOfBirth"
                                         label="Date of Birth *"
@@ -153,20 +145,18 @@ const PassengerStep = () => {
                                         extraWarning={showWarning('dateOfBirth') ? 'Please verify this information' : ''}
                                     />
                                 </Grid>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <FormInput
-                                    name="passport"
-                                    label="Passport Number *"
-                                    placeholder="e.g. SPEC2014"
-                                    icon={<VpnKey/>}
-                                    validators={[required, minLength(6)]}
-                                    showAutofillWarning
-                                    extraWarning={showWarning('passport') ? 'Please verify this information' : ''}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Grid item xs={12} md={6}>
+                                <Grid size={4}>
+                                    <FormInput
+                                        name="passport"
+                                        label="Passport Number *"
+                                        placeholder="e.g. SPEC2014"
+                                        icon={<VpnKey/>}
+                                        validators={[required, minLength(6)]}
+                                        showAutofillWarning
+                                        extraWarning={showWarning('passport') ? 'Please verify this information' : ''}
+                                    />
+                                </Grid>
+                                <Grid size={4}>
                                     <DatePickerInput
                                         name="passportExpiry"
                                         label="Passport Expiration Date *"
@@ -175,7 +165,6 @@ const PassengerStep = () => {
                                         extraWarning={showWarning('passportExpiry') ? 'Please verify this information' : ''}
                                     />
                                 </Grid>
-                            </Grid>
                         </Grid>
                     </FrostedCard>
 

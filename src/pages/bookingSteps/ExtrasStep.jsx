@@ -37,7 +37,7 @@ const ExtrasStep = () => {
             });
         });
         return () => subscription.unsubscribe();
-    }, [watch]);
+    }, [watch, formData.extras, updateForm]);
 
     return (
         <FormProvider {...methods}>

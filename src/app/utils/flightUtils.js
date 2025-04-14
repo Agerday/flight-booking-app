@@ -14,7 +14,7 @@ export const getFilteredLocations = (flights, selectedFrom, selectedTo) => ({
 export const getAvailableDepartureDates = (flights, from, to) => {
     return flights
         .filter(f => f.from === from && f.to === to)
-        .map(f => new Date(f.departureTime).toDateString());
+        .map(f => new Date(f.departureTime));
 };
 
 export const filterFlights = (flights, from, to, departureDate) => {

@@ -11,45 +11,48 @@ import {searchFormSchema} from '../../app/validationSchemas/searchFormSchema';
 import {getAvailableDepartureDates, getFilteredLocations} from '../../app/utils/flightUtils';
 import mockFlights from '../../data/mockFlights';
 import {required} from '../../app/utils/validators';
+import { isSameDay } from 'date-fns';
+
 
 const SearchFlightStep = () => {
     const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
     const methods = useForm({
         defaultValues: {
-            origin: formData.origin || '',
-            destination: formData.destination || '',
-            departure: formData.departure || null,
-            returnDate: formData.returnDate || null,
-            tripType: formData.tripType || 'oneway',
-            passengers: formData.passengers || 1,
+            ...formData.initialInfos
         },
         mode: 'onChange',
     });
 
-    const {control, setValue, watch, formState: {isValid}} = methods;
+    const {
+        control, setValue, watch,
+        formState: {isValid}
+    } = methods;
     const {origin, destination, departure, tripType} = watch();
 
     const {
         from: fromList,
         to: toList
     } = useMemo(() => getFilteredLocations(mockFlights, origin, destination), [origin, destination]);
+
     const originOptions = fromList.map(label => ({label, value: label}));
     const destinationOptions = toList.map(label => ({label, value: label}));
-
-    const availableDates = useMemo(() => getAvailableDepartureDates(mockFlights, origin, destination), [origin, destination]);
-
+    const availableDates = useMemo(() =>
+            getAvailableDepartureDates(mockFlights, origin, destination),
+        [origin, destination]
+    );
     useEffect(() => {
         updateStepValidity(currentStep, isValid);
     }, [isValid, currentStep, updateStepValidity]);
 
     useEffect(() => {
         const subscription = watch(data => {
-            Object.entries(data).forEach(([key, value]) => {
-                updateForm(key, value);
+            updateForm('initialInfos', {
+                ...formData.initialInfos,
+                ...data
             });
         });
         return () => subscription.unsubscribe();
-    }, [watch, updateForm]);
+    }, [watch, formData.initialInfos, updateForm]);
 
     return (
         <Container maxWidth="md">
@@ -118,8 +121,9 @@ const SearchFlightStep = () => {
                                         label="Departure Date *"
                                         value={field.value}
                                         onChange={field.onChange}
+                                        disabled={!origin || !destination}
                                         shouldDisableDate={(date) =>
-                                            origin && destination && !availableDates.includes(date.toDateString())
+                                            origin && destination && !availableDates.some((d) => isSameDay(d, date))
                                         }
                                         slotProps={{
                                             textField: {
@@ -144,6 +148,7 @@ const SearchFlightStep = () => {
                                             label="Return Date *"
                                             value={field.value}
                                             onChange={field.onChange}
+                                            disabled={!origin || !destination}
                                             shouldDisableDate={(date) => !departure || new Date(date) <= new Date(departure)}
                                             slotProps={{
                                                 textField: {

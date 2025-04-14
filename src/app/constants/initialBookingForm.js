@@ -1,11 +1,13 @@
 export const initialBookingForm = {
     // STEP 1
-    origin: '',
-    destination: '',
-    departure: '',
-    returnDate: '',
-    tripType: 'oneway',
-    passengers: 1,
+    initialInfos: {
+        origin: '',
+        destination: '',
+        departure: '',
+        returnDate: '',
+        tripType: 'oneway',
+        passengers: 1
+    },
 
     flight: {
         id: null,
