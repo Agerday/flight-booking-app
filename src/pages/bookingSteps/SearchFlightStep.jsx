@@ -166,11 +166,11 @@ const SearchFlightStep = () => {
                         {/*Third Row*/}
                         <Grid size={4}>
                             <FormInput
-                                name="passengers"
+                                name="passengerNumber"
                                 label="Passengers *"
                                 type="number"
                                 icon={<People/>}
-                                validators={searchFormSchema.passengers}
+                                validators={searchFormSchema.passengerNumber}
                                 inputProps={{min: 0}}
                             />
                         </Grid>

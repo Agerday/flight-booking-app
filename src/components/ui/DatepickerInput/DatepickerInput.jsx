@@ -1,7 +1,7 @@
 import React from 'react';
-import {Typography} from '@mui/material';
-import {Controller, useFormContext} from 'react-hook-form';
-import {DatePicker} from '@mui/x-date-pickers';
+import { Typography } from '@mui/material';
+import { Controller, useFormContext } from 'react-hook-form';
+import { DatePicker } from '@mui/x-date-pickers';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 const DatePickerInput = ({
@@ -11,25 +11,34 @@ const DatePickerInput = ({
                              showAutofillWarning = false,
                              extraWarning = ''
                          }) => {
-    const {control} = useFormContext();
+    const { control } = useFormContext();
+
+    const buildValidationRules = () => {
+        if (!validators.length) return {};
+        return {
+            validate: (value) => {
+                for (const validator of validators) {
+                    const result = validator(value);
+                    if (result !== true) return result;
+                }
+                return true;
+            }
+        };
+    };
 
     return (
         <Controller
             name={name}
             control={control}
-            rules={{
-                validate: validators.length
-                    ? (value) => validators.map((v) => v(value)).filter(Boolean)[0]
-                    : undefined,
-            }}
-            render={({field, fieldState}) => (
+            rules={buildValidationRules()}
+            render={({ field, fieldState }) => (
                 <>
                     <DatePicker
                         label={label}
                         value={field.value || null}
                         onChange={(val) => {
                             field.onChange(val);
-                            field.onBlur()
+                            field.onBlur();
                         }}
                         slotProps={{
                             textField: {
@@ -39,6 +48,7 @@ const DatePickerInput = ({
                             },
                         }}
                     />
+
                     {showAutofillWarning && extraWarning && (
                         <Typography
                             variant="caption"
@@ -49,7 +59,7 @@ const DatePickerInput = ({
                                 mt: 0.5,
                             }}
                         >
-                            <WarningAmberIcon sx={{fontSize: 16, mr: 0.5}}/>
+                            <WarningAmberIcon sx={{ fontSize: 16, mr: 0.5 }} />
                             {extraWarning}
                         </Typography>
                     )}

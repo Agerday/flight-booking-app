@@ -5,7 +5,7 @@ export const searchFormSchema = {
     destination: [required],
     departure: [required],
     tripType: [required],
-    passengers: [(val) => (val > 0 ? true : 'At least 1 passenger required')],
+    passengerNumber: [(val) => (val > 0 ? true : 'At least 1 passenger required')],
     returnDate: (formData) =>
         formData.tripType === 'return' ? [required] : [],
 };

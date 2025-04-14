@@ -1,6 +1,6 @@
 import React from 'react';
-import {InputAdornment, MenuItem, TextField, Typography} from '@mui/material';
-import {Controller, useFormContext} from 'react-hook-form';
+import { InputAdornment, MenuItem, TextField, Typography } from '@mui/material';
+import { Controller, useFormContext } from 'react-hook-form';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 const FormInput = ({
@@ -17,12 +17,24 @@ const FormInput = ({
                    }) => {
     const { control } = useFormContext();
 
+    const buildValidationRules = () => {
+        if (!validators.length) return {};
+        return {
+            validate: (value) => {
+                for (const validator of validators) {
+                    const result = validator(value);
+                    if (result !== true) return result;
+                }
+                return true;
+            }
+        };
+    };
+
     return (
         <Controller
             name={name}
             control={control}
-            rules={{ validate: validators.length ? (value) =>
-                    validators.map(v => v(value)).filter(Boolean)[0] : undefined }}
+            rules={buildValidationRules()}
             render={({ field, fieldState }) => (
                 <>
                     <TextField

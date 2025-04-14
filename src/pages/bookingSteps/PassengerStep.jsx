@@ -1,26 +1,36 @@
 import React, {useEffect, useState} from 'react';
 import {Divider, Grid, Typography} from '@mui/material';
 import {CreditCard, Email, Public, VpnKey, Wc as WcIcon} from '@mui/icons-material';
-
 import {FormProvider, useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router-dom';
-
-import {isEmail, minLength, required} from '../../app/utils/validators';
+import {hasNumber, isEmail, minLength, required} from '../../app/utils/validators';
 import {useBookingForm} from '../../context/BookingFormContext';
 import PassportScanner from '../../components/booking/PassportScanner/PassportScanner';
 import FormInput from '../../components/ui/FormInput/FormInput';
 import {genderOptions} from '../../app/constants/genderOptions';
-import FrostedCard from "../../components/layout/FrostedCard/FrostedCard";
-import DatePickerInput from "../../components/ui/DatepickerInput/DatepickerInput";
+import FrostedCard from '../../components/layout/FrostedCard/FrostedCard';
+import DatePickerInput from '../../components/ui/DatepickerInput/DatepickerInput';
+import {createEmptyPassenger} from "../../app/utils/formUtils";
 
 const PassengerStep = () => {
     const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
     const navigate = useNavigate();
     const [autoFilledFields, setAutoFilledFields] = useState({});
 
+    const initializePassengers = (passengers, passengerNumber) => {
+        if (passengers?.length) {
+            return passengers.map(p => ({
+                ...createEmptyPassenger(),
+                ...p,
+            }));
+        }
+
+        return Array.from({length: passengerNumber}, () => createEmptyPassenger());
+    };
+
     const methods = useForm({
         defaultValues: {
-            ...formData.passenger,
+            passengers: initializePassengers(formData.passengers, formData.initialInfos.passengerNumber),
         },
         mode: 'onBlur',
         reValidateMode: 'onChange',
@@ -34,6 +44,7 @@ const PassengerStep = () => {
     } = methods;
 
     const watchAll = watch();
+
     const showWarning = (field) =>
         autoFilledFields[field] && watchAll[field] && !touchedFields[field];
 
@@ -42,20 +53,16 @@ const PassengerStep = () => {
     }, [isValid, currentStep, updateStepValidity]);
 
     useEffect(() => {
-        const subscription = watch(data => {
-            updateForm('passenger', {
-                ...formData.passenger,
-                ...data
-            });
+        const subscription = watch((data) => {
+            updateForm('passengers', data.passengers);
         });
         return () => subscription.unsubscribe();
-    }, [watch, formData.passenger, updateForm]);
-
+    }, [watch, updateForm]);
 
     const onSubmit = (data) => {
-        Object.keys(data).forEach((key) => updateForm(key, data[key]));
+        updateForm('passengers', data.passengers);
         const stored = JSON.parse(localStorage.getItem('myBookings')) || [];
-        const updated = [...new Set([...stored, formData.selectedFlight?.id])];
+        const updated = [...new Set([...stored, formData.flight?.id])];
         localStorage.setItem('myBookings', JSON.stringify(updated));
         navigate('/my-bookings');
     };
@@ -63,9 +70,9 @@ const PassengerStep = () => {
     const handleScanComplete = (scannedData) => {
         const filled = {};
         Object.entries(scannedData).forEach(([key, value]) => {
-            setValue(key, value, {shouldValidate: true});
-            updateForm(key, value);
-            filled[key] = true;
+            const path = `passengers.0.${key}`;
+            setValue(path, value, {shouldValidate: true});
+            filled[path] = true;
         });
         window.scrollTo({top: 0, behavior: 'smooth'});
         setAutoFilledFields(filled);
@@ -73,41 +80,38 @@ const PassengerStep = () => {
 
     return (
         <>
-            <Typography variant="h4" gutterBottom>📝 Passenger Details</Typography>
+            <Typography variant="h4" gutterBottom>📝 Passengers Details</Typography>
             <Divider sx={{my: 2}}/>
 
             <FormProvider {...methods}>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    {/* Section 1: Personal Info */}
-                    <FrostedCard>
-                        <Grid container spacing={2}>
+                    {Array.from({length: formData.initialInfos.passengerNumber}).map((_, index) => (
+                        <FrostedCard key={index}>
+                            <Typography variant="h6" gutterBottom>Passenger {index + 1}</Typography>
+                            <Grid container spacing={2}>
                                 <Grid size={6}>
                                     <FormInput
-                                        name="firstName"
+                                        name={`passengers.${index}.firstName`}
                                         label="First Name *"
                                         placeholder="e.g. Adrien"
                                         icon={<CreditCard/>}
                                         validators={[required]}
-                                        showAutofillWarning
-                                        extraWarning={showWarning('firstName') ? 'Please verify this information' : ''}
                                     />
                                 </Grid>
                                 <Grid size={6}>
                                     <FormInput
-                                        name="lastName"
+                                        name={`passengers.${index}.lastName`}
                                         label="Last Name *"
                                         placeholder="e.g. Gerday"
                                         icon={<CreditCard/>}
                                         validators={[required]}
-                                        showAutofillWarning
-                                        extraWarning={showWarning('lastName') ? 'Please verify this information' : ''}
                                     />
                                 </Grid>
                                 <Grid size={6}>
                                     <FormInput
-                                        name="email"
+                                        name={`passengers.${index}.email`}
                                         label="Email *"
-                                        placeholder="e.g. adrien.gerday@airline.com"
+                                        placeholder="e.g. adrien@airline.com"
                                         icon={<Email/>}
                                         type="email"
                                         validators={[required, isEmail]}
@@ -115,60 +119,50 @@ const PassengerStep = () => {
                                 </Grid>
                                 <Grid size={3}>
                                     <FormInput
-                                        name="nationality"
+                                        name={`passengers.${index}.nationality`}
                                         label="Nationality *"
                                         placeholder="e.g. Belgium"
                                         icon={<Public/>}
                                         validators={[required]}
-                                        showAutofillWarning
-                                        extraWarning={showWarning('nationality') ? 'Please verify this information' : ''}
                                     />
                                 </Grid>
                                 <Grid size={3}>
                                     <FormInput
-                                        name="gender"
+                                        name={`passengers.${index}.gender`}
                                         label="Gender *"
                                         icon={<WcIcon/>}
-                                        validators={[required]}
                                         isSelect
                                         options={genderOptions}
-                                        showAutofillWarning
-                                        extraWarning={showWarning('gender') ? 'Please verify this information' : ''}
+                                        validators={[required]}
                                     />
                                 </Grid>
                                 <Grid size={4}>
                                     <DatePickerInput
-                                        name="dateOfBirth"
+                                        name={`passengers.${index}.dateOfBirth`}
                                         label="Date of Birth *"
                                         validators={[required]}
-                                        showAutofillWarning
-                                        extraWarning={showWarning('dateOfBirth') ? 'Please verify this information' : ''}
                                     />
                                 </Grid>
                                 <Grid size={4}>
                                     <FormInput
-                                        name="passport"
+                                        name={`passengers.${index}.passport`}
                                         label="Passport Number *"
                                         placeholder="e.g. SPEC2014"
                                         icon={<VpnKey/>}
-                                        validators={[required, minLength(6)]}
-                                        showAutofillWarning
-                                        extraWarning={showWarning('passport') ? 'Please verify this information' : ''}
+                                        validators={[required, minLength(6), hasNumber]}
                                     />
                                 </Grid>
                                 <Grid size={4}>
                                     <DatePickerInput
-                                        name="passportExpiry"
+                                        name={`passengers.${index}.passportExpiry`}
                                         label="Passport Expiration Date *"
                                         validators={[required]}
-                                        showAutofillWarning
-                                        extraWarning={showWarning('passportExpiry') ? 'Please verify this information' : ''}
                                     />
                                 </Grid>
-                        </Grid>
-                    </FrostedCard>
+                            </Grid>
+                        </FrostedCard>
+                    ))}
 
-                    {/* Section 2: Scanner */}
                     <FrostedCard>
                         <PassportScanner onScanComplete={handleScanComplete}/>
                     </FrostedCard>

@@ -6,7 +6,7 @@ export const initialBookingForm = {
         departure: '',
         returnDate: '',
         tripType: 'oneway',
-        passengers: 1
+        passengerNumber: 1
     },
 
     flight: {
@@ -29,16 +29,18 @@ export const initialBookingForm = {
     selectedReturnFlight: null,
 
     // STEP 3
-    passenger: {
-        firstName: '',
-        lastName: '',
-        email: '',
-        passport: '',
-        nationality: '',
-        dateOfBirth: '',
-        gender: '',
-        passportExpiry: '',
-    },
+    passengers: [
+        {
+            firstName: '',
+            lastName: '',
+            email: '',
+            passport: '',
+            nationality: '',
+            dateOfBirth: '',
+            gender: '',
+            passportExpiry: '',
+        }
+    ],
 
     // STEP 4
     seat: {
