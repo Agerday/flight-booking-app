@@ -99,7 +99,7 @@ const PassengerStep = () => {
                                     extraWarning={showWarning('firstName') ? 'Please verify this information' : ''}
                                 />
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid item size={4}>
                                 <FormInput
                                     name="lastName"
                                     label="Last Name *"

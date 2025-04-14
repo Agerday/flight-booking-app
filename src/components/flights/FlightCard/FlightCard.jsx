@@ -13,7 +13,7 @@ const FlightCard = ({flight, onSelect}) => {
         const theme = flightClassThemes[classType];
 
         return (
-            <Grid item xs={12} sm={4} key={classType}>
+            <Grid item size={4} key={classType}>
                 <Paper
                     elevation={2}
                     sx={{
