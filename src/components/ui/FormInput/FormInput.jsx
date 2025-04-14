@@ -37,37 +37,47 @@ const FormInput = ({
             rules={buildValidationRules()}
             render={({ field, fieldState }) => (
                 <>
-                    <TextField
-                        {...field}
-                        fullWidth
-                        label={label}
-                        placeholder={placeholder}
-                        type={type}
-                        error={!!fieldState.error}
-                        helperText={fieldState.error?.message}
-                        select={isSelect}
-                        InputProps={{
-                            startAdornment: icon ? (
-                                <InputAdornment position="start">{icon}</InputAdornment>
-                            ) : null
-                        }}
-                    >
-                        {isSelect && options.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-
-                    {showAutofillWarning && extraWarning && (
-                        <Typography
-                            variant="caption"
-                            sx={{ color: 'warning.main', display: 'flex', alignItems: 'center', mt: 0.5 }}
+                    <>
+                        <TextField
+                            {...field}
+                            value={field.value ?? ''}
+                            fullWidth
+                            label={label}
+                            placeholder={placeholder}
+                            type={type}
+                            error={!!fieldState.error}
+                            helperText={fieldState.error?.message || ''}
+                            select={isSelect}
+                            InputProps={{
+                                startAdornment: icon ? (
+                                    <InputAdornment position="start">{icon}</InputAdornment>
+                                ) : null,
+                            }}
                         >
-                            <WarningAmberIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                            {extraWarning}
-                        </Typography>
-                    )}
+                            {isSelect &&
+                                options.map((option) => (
+                                    <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </MenuItem>
+                                ))}
+                        </TextField>
+
+                        {showAutofillWarning && extraWarning && !fieldState.error && (
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: 'warning.main',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    mt: 0.5,
+                                    ml: 1,
+                                }}
+                            >
+                                <WarningAmberIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                                {extraWarning}
+                            </Typography>
+                        )}
+                    </>
                 </>
             )}
         />

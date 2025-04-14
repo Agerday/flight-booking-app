@@ -1,28 +1,45 @@
-import React, {useEffect, useRef} from 'react';
-import {Box, Button, Card, CardContent, Chip, Divider, Stack, Typography,} from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Divider,
+    Stack,
+    Typography,
+} from '@mui/material';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import CheckIcon from '@mui/icons-material/Check';
-import {FormProvider, useForm} from 'react-hook-form';
-import {useBookingForm} from '../../context/BookingFormContext';
-import {assistanceTiers} from '../../app/constants/extraTiers';
-import {extrasPricing} from '../../app/constants/extrasPricing';
+import { FormProvider, useForm } from 'react-hook-form';
+import { useBookingForm } from '../../context/BookingFormContext';
+import { assistanceTiers } from '../../app/constants/extraTiers';
+import { extrasPricing } from '../../app/constants/extrasPricing';
 import ToggleCard from '../../components/layout/ToggleCard/ToggledCard';
 
 const ExtrasStep = () => {
-    const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
+    const { formData, updateForm, updateStepValidity, currentStep } = useBookingForm();
+
+    const [activePassengerIndex, setActivePassengerIndex] = useState(0);
+    const passengerCount = formData.initialInfos.passengerNumber;
+
     const methods = useForm({
         defaultValues: {
-            ...formData.extras,
+            ...formData.passengers[activePassengerIndex]?.extras,
+            assistance: formData.extras.assistance,
         },
         mode: 'onChange',
     });
-    const {watch, setValue, formState: {isValid}} = methods;
+
+    const { watch, setValue, formState: { isValid } } = methods;
     const watched = watch();
+
     const last = useRef({
         checkedBaggage: false,
         meals: false,
         baggageInsurance: false,
     });
+
     const selectedTier = watched.assistance?.type || 'normal';
 
     useEffect(() => {
@@ -30,18 +47,36 @@ const ExtrasStep = () => {
     }, [isValid, currentStep, updateStepValidity]);
 
     useEffect(() => {
+        methods.reset({
+            ...formData.passengers[activePassengerIndex]?.extras,
+            assistance: formData.extras.assistance,
+        });
+    }, [activePassengerIndex, formData.extras.assistance, formData.passengers, methods]);
+
+    useEffect(() => {
         const subscription = watch(data => {
             updateForm('extras', {
-                ...formData.extras,
-                ...data
+                assistance: data.assistance,
             });
+
+            const updatedPassengers = [...formData.passengers];
+            updatedPassengers[activePassengerIndex] = {
+                ...updatedPassengers[activePassengerIndex],
+                extras: {
+                    checkedBaggage: data.checkedBaggage,
+                    meals: data.meals,
+                    baggageInsurance: data.baggageInsurance,
+                },
+            };
+            updateForm('passengers', updatedPassengers);
         });
+
         return () => subscription.unsubscribe();
-    }, [watch, formData.extras, updateForm]);
+    }, [watch, updateForm, activePassengerIndex, formData.passengers]);
 
     return (
         <FormProvider {...methods}>
-            <Box sx={{mt: 4}}>
+            <Box sx={{ mt: 4 }}>
                 <Typography variant="h5" align="center" gutterBottom>
                     ✨ Upgrade Your Support Level
                 </Typography>
@@ -49,7 +84,7 @@ const ExtrasStep = () => {
                     Choose the level of assistance for your trip. Premium tiers come with exclusive benefits.
                 </Typography>
 
-                <Stack direction={{xs: 'column', md: 'row'}} spacing={2} justifyContent="center">
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="center">
                     {assistanceTiers.map((tier) => {
                         const isSelected = selectedTier === tier.id;
                         return (
@@ -80,7 +115,7 @@ const ExtrasStep = () => {
                                     },
                                 }}
                             >
-                            <CardContent sx={{flex: 1}}>
+                                <CardContent sx={{ flex: 1 }}>
                                     <Stack spacing={1} alignItems="center">
                                         <Typography variant="h6">{tier.name}</Typography>
                                         <Typography variant="subtitle1" fontWeight={500}>
@@ -91,11 +126,11 @@ const ExtrasStep = () => {
                                                 label="Most Popular (Actual Scam)"
                                                 color="success"
                                                 size="small"
-                                                icon={<FlashOnIcon/>}
-                                                sx={{mt: 1}}
+                                                icon={<FlashOnIcon />}
+                                                sx={{ mt: 1 }}
                                             />
                                         )}
-                                        <Divider sx={{width: '100%', my: 1}}/>
+                                        <Divider sx={{ width: '100%', my: 1 }} />
                                         {tier.features.map((feature, i) => (
                                             <Stack
                                                 key={i}
@@ -104,14 +139,14 @@ const ExtrasStep = () => {
                                                 alignItems="center"
                                                 width="100%"
                                             >
-                                                <CheckIcon fontSize="small" color="success"/>
+                                                <CheckIcon fontSize="small" color="success" />
                                                 <Typography variant="body2">{feature}</Typography>
                                             </Stack>
                                         ))}
                                     </Stack>
                                 </CardContent>
 
-                                <Box sx={{p: 2}}>
+                                <Box sx={{ p: 2 }}>
                                     <Button
                                         onClick={() => {
                                             const current = watched.assistance;
@@ -134,14 +169,33 @@ const ExtrasStep = () => {
                     })}
                 </Stack>
 
-                {/* Extras Section */}
+                <Typography variant="h6" textAlign="center" mt={5}>
+                    Extras for Passenger {activePassengerIndex + 1} of {passengerCount}
+                </Typography>
+
+                <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
+                    <Button
+                        variant="outlined"
+                        disabled={activePassengerIndex === 0}
+                        onClick={() => setActivePassengerIndex(i => i - 1)}
+                    >
+                        ⬅️ Previous Passenger
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        disabled={activePassengerIndex === passengerCount - 1}
+                        onClick={() => setActivePassengerIndex(i => i + 1)}
+                    >
+                        Next Passenger ➡️
+                    </Button>
+                </Stack>
+
                 <Box mt={5}>
                     <Typography variant="h6" gutterBottom textAlign="center">
                         ✈️ Additional Options
                     </Typography>
 
-                    <Stack direction={{xs: 'column', md: 'row'}} spacing={2} justifyContent="center" mt={2}>
-                        {/* Checked Baggage */}
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="center" mt={2}>
                         <ToggleCard
                             icon="🧳"
                             title="Checked Baggage"
@@ -156,7 +210,7 @@ const ExtrasStep = () => {
                                     ? watched.checkedBaggage?.weight || extrasPricing.checkedBaggage.defaultWeight
                                     : '';
                                 const price = toggled ? extrasPricing.checkedBaggage.weights[weight] : 0;
-                                setValue('checkedBaggage', {selected: toggled, weight, price}, {shouldValidate: true});
+                                setValue('checkedBaggage', { selected: toggled, weight, price }, { shouldValidate: true });
                                 last.current.checkedBaggage = toggled;
                             }}
                             dropdownLabel="Select your baggage weight:"
@@ -173,11 +227,10 @@ const ExtrasStep = () => {
                                     ...watched.checkedBaggage,
                                     weight,
                                     price,
-                                }, {shouldValidate: true});
+                                }, { shouldValidate: true });
                             }}
                         />
 
-                        {/* Meal */}
                         <ToggleCard
                             icon="🍽️"
                             title="Meal"
@@ -189,12 +242,11 @@ const ExtrasStep = () => {
                             onToggle={() => {
                                 const toggled = !watched.meals?.selected;
                                 const price = toggled ? extrasPricing.meals : 0;
-                                setValue('meals', {selected: toggled, price}, {shouldValidate: true});
+                                setValue('meals', { selected: toggled, price }, { shouldValidate: true });
                                 last.current.meals = toggled;
                             }}
                         />
 
-                        {/* Baggage Insurance */}
                         <ToggleCard
                             icon="🛡️"
                             title="Baggage Insurance"
@@ -206,7 +258,7 @@ const ExtrasStep = () => {
                             onToggle={() => {
                                 const toggled = !watched.baggageInsurance?.selected;
                                 const price = toggled ? extrasPricing.baggageInsurance : 0;
-                                setValue('baggageInsurance', {selected: toggled, price}, {shouldValidate: true});
+                                setValue('baggageInsurance', { selected: toggled, price }, { shouldValidate: true });
                                 last.current.baggageInsurance = toggled;
                             }}
                         />

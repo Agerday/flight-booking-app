@@ -19,9 +19,7 @@ const PassportScanner = ({onScanComplete}) => {
         setImageUrl(URL.createObjectURL(file));
 
         try {
-            const {data} = await Tesseract.recognize(file, 'eng', {
-                logger: (msg) => console.log('[OCR]', msg),
-            });
+            const {data} = await Tesseract.recognize(file, 'eng', {});
 
             const lines = data.text
                 .split('\n')
@@ -56,11 +54,8 @@ const PassportScanner = ({onScanComplete}) => {
                 dateOfBirth: parseDate(fields.birthDate),
                 passportExpiry: parseDate(fields.expirationDate),
             };
-            console.log(mapped)
-
             onScanComplete(mapped);
         } catch (err) {
-            console.error('[Scanner Error]', err);
             setError(err.message || 'Failed to read passport. Please try again.');
         } finally {
             setLoading(false);

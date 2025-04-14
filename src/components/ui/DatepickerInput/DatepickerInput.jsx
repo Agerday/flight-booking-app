@@ -35,7 +35,7 @@ const DatePickerInput = ({
                 <>
                     <DatePicker
                         label={label}
-                        value={field.value || null}
+                        value={field.value ?? null}
                         onChange={(val) => {
                             field.onChange(val);
                             field.onBlur();
@@ -44,12 +44,12 @@ const DatePickerInput = ({
                             textField: {
                                 fullWidth: true,
                                 error: !!fieldState.error,
-                                helperText: fieldState.error?.message,
-                            },
+                                helperText: fieldState.error?.message || '',
+                            }
                         }}
                     />
 
-                    {showAutofillWarning && extraWarning && (
+                    {showAutofillWarning && extraWarning && !fieldState.error && (
                         <Typography
                             variant="caption"
                             sx={{
@@ -57,6 +57,7 @@ const DatePickerInput = ({
                                 display: 'flex',
                                 alignItems: 'center',
                                 mt: 0.5,
+                                ml: 1,
                             }}
                         >
                             <WarningAmberIcon sx={{ fontSize: 16, mr: 0.5 }} />

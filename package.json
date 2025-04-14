@@ -16,6 +16,8 @@
     "date-fns": "^2.29.3",
     "framer-motion": "^12.6.3",
     "html2canvas": "^1.4.1",
+    "html2pdf.js": "^0.10.3",
+    "jspdf": "^3.0.1",
     "mrz": "^4.2.1",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.0",

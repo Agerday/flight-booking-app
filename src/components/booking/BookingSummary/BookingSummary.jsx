@@ -1,5 +1,5 @@
 import React from 'react';
-import {Box, Card, CardContent, Chip, Divider, List, ListItem, Typography,} from '@mui/material';
+import {Box, Card, CardContent, Chip, Divider, Fade, List, ListItem, Stack, Typography,} from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import LuggageIcon from '@mui/icons-material/Luggage';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -19,67 +19,97 @@ const iconMap = {
 
 const BookingSummaryBox = () => {
     const {formData} = useBookingForm();
-    const itemList = generatePriceSummary(formData, {icons: iconMap});
-    const total = itemList.reduce((sum, item) => sum + item.price, 0);
+    const summary = generatePriceSummary(formData, {icons: iconMap});
+
+    const sharedItems = summary.filter((item) => item.scope === 'global');
+    const perPassengerItems = summary.filter((item) => item.scope === 'passenger');
+
+    const total = summary.reduce((sum, item) => sum + item.price, 0);
+    const passengerCount = formData.initialInfos.passengerNumber;
+
+    const getItemsForPassenger = (index) =>
+        perPassengerItems.filter((item) => item.passengerIndex === index);
 
     return (
-        <Box display="flex" justifyContent="center" width="100%" mt={2}>
+        <Box display="flex" justifyContent="center" width="100%" mt={3}>
             <Card
                 sx={{
-                    borderRadius: 3,
-                    boxShadow: 4,
+                    borderRadius: 4,
+                    boxShadow: 8,
                     width: '100%',
-                    maxWidth: 280,
-                    px: 1.5,
-                    py: 1,
+                    maxWidth: 340,
+                    background: 'linear-gradient(135deg, #ffffff, #f4f6f9)',
+                    transition: 'all 0.3s ease-in-out',
                 }}
             >
-                <CardContent sx={{p: 2}}>
-                    <Typography variant="subtitle1" gutterBottom fontWeight={600}>
-                        ✈️ Booking Summary
+                <CardContent sx={{p: 3}}>
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                        fontWeight={700}
+                        textAlign="center"
+                        sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1}}
+                    >
+                        🧾 Booking Summary
                     </Typography>
+
                     <List disablePadding>
-                        {itemList.map(({label, price, icon}) => (
-                            <ListItem
-                                key={label}
-                                sx={{
-                                    py: 0.75,
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'flex-start',
-                                }}
-                            >
-                                <Box display="flex" alignItems="flex-start" gap={1} flex={1} mr={1}>
-                                    {icon}
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            fontSize: '0.85rem',
-                                            lineHeight: 1.2,
-                                            wordBreak: 'break-word',
-                                            whiteSpace: 'normal',
-                                        }}
-                                    >
-                                        {label}
-                                    </Typography>
-                                </Box>
-                                <Chip
-                                    label={`€${price}`}
-                                    color="info"
-                                    size="small"
-                                    sx={{fontSize: '0.75rem', height: 22}}
-                                />
-                            </ListItem>
+                        {sharedItems.map(({label, price, icon}, i) => (
+                            <Fade in timeout={400 + i * 100} key={`shared-${label}-${i}`}>
+                                <ListItem sx={{py: 0.75, px: 0}}>
+                                    <Stack direction="row" spacing={1} alignItems="center" flex={1}>
+                                        {icon}
+                                        <Typography variant="body2">{label}</Typography>
+                                    </Stack>
+                                    <Chip label={`€${price}`} size="small" color="info"/>
+                                </ListItem>
+                            </Fade>
                         ))}
-                        <Divider sx={{my: 1}}/>
-                        <ListItem sx={{py: 1, justifyContent: 'space-between'}}>
-                            <Typography variant="body2" fontWeight={500}>
-                                Total
-                            </Typography>
-                            <Typography variant="h6" color="primary" sx={{fontSize: '1rem'}}>
-                                €{total}
-                            </Typography>
-                        </ListItem>
+
+                        {passengerCount > 1 && <Divider sx={{my: 1}}/>}
+
+                        {Array.from({length: passengerCount}).map((_, idx) => (
+                            <Box key={`passenger-${idx}`}>
+                                {passengerCount > 1 && (
+                                    <Fade in timeout={500 + idx * 100}>
+                                        <Typography
+                                            variant="subtitle2"
+                                            fontWeight={600}
+                                            color="primary"
+                                            mt={1}
+                                            mb={0.5}
+                                        >
+                                            👤 Passenger {idx + 1}
+                                        </Typography>
+                                    </Fade>
+                                )}
+
+                                {getItemsForPassenger(idx).map(({label, price, icon}, i) => (
+                                    <Fade in timeout={600 + i * 100} key={`p${idx}-${label}-${i}`}>
+                                        <ListItem sx={{py: 0.5, px: 0}}>
+                                            <Stack direction="row" spacing={1} alignItems="center" flex={1}>
+                                                {icon}
+                                                <Typography variant="body2">{label}</Typography>
+                                            </Stack>
+                                            <Chip label={`€${price}`} size="small" color="default"/>
+                                        </ListItem>
+                                    </Fade>
+                                ))}
+                            </Box>
+                        ))}
+
+                        <Divider sx={{my: 2}}/>
+
+                        <Fade in timeout={800}>
+                            <ListItem sx={{py: 1, justifyContent: 'space-between'}}>
+                                <Typography variant="body2" fontWeight={600}>
+                                    Total
+                                </Typography>
+                                <Typography variant="h6" color="primary">
+                                    €{total}
+                                </Typography>
+                            </ListItem>
+                        </Fade>
                     </List>
                 </CardContent>
             </Card>

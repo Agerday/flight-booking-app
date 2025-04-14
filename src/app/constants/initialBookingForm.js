@@ -6,7 +6,7 @@ export const initialBookingForm = {
         departure: '',
         returnDate: '',
         tripType: 'oneway',
-        passengerNumber: 1
+        passengerNumber: 1,
     },
 
     flight: {
@@ -23,7 +23,7 @@ export const initialBookingForm = {
             economy: 0,
             premium: 0,
             business: 0,
-        }
+        },
     },
 
     selectedReturnFlight: null,
@@ -39,17 +39,9 @@ export const initialBookingForm = {
             dateOfBirth: '',
             gender: '',
             passportExpiry: '',
-        }
+            seat: null
+        },
     ],
-
-    // STEP 4
-    seat: {
-        id: '',
-        class: '',
-        price: 0,
-        row: null,
-        seat: '',
-    },
 
     // STEP 5 - EXTRAS
     extras: {
@@ -69,6 +61,6 @@ export const initialBookingForm = {
         baggageInsurance: {
             selected: false,
             price: 0,
-        }
-    }
+        },
+    },
 };

@@ -1,5 +1,5 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {Box, Fade, Grid, Paper, Slide, Stack, Tooltip, Typography,} from '@mui/material';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Box, Fade, Grid, Paper, Slide, Stack, Tooltip, Typography } from '@mui/material';
 
 const rows = 12;
 const leftSeats = ['A', 'B', 'C'];
@@ -11,7 +11,7 @@ const seatClasses = {
     economy: { rows: [7, 8, 9, 10, 11, 12], price: 50, color: '#27ae60' },
 };
 
-const SeatMap = ({ onSeatSelect, selectedSeat }) => {
+const SeatMap = ({ onSeatSelect, selectedSeat, reservedSeatIds }) => {
     const allSeats = useMemo(() => {
         const seats = [];
         for (let row = 1; row <= rows; row++) {
@@ -22,33 +22,27 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
         return seats;
     }, []);
 
-    const generateInitialBookedSeats = (percentage = 0.25) => {
-        const shuffled = [...allSeats].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, Math.floor(allSeats.length * percentage));
-    };
-
-    const [bookedSeats, setBookedSeats] = useState(generateInitialBookedSeats());
+    const [bookedSeats, setBookedSeats] = useState([]);
     const [lastBookedSeat, setLastBookedSeat] = useState(null);
+
+    useEffect(() => {
+        const shuffled = [...allSeats].sort(() => 0.5 - Math.random());
+        setBookedSeats(shuffled.slice(0, Math.floor(allSeats.length * 0.25)));
+    }, [allSeats]);
 
     useEffect(() => {
         const interval = setInterval(() => {
             const freeSeats = allSeats.filter(
-                (s) => !bookedSeats.includes(s) && s !== selectedSeat?.id
+                (s) => !bookedSeats.includes(s) && !reservedSeatIds.includes(s)
             );
-
             if (freeSeats.length === 0) return;
-
             const next = freeSeats[Math.floor(Math.random() * freeSeats.length)];
             setBookedSeats((prev) => [...prev, next]);
             setLastBookedSeat(next);
-
-            setTimeout(() => {
-                setLastBookedSeat(null);
-            }, 1500);
+            setTimeout(() => setLastBookedSeat(null), 1500);
         }, 10000);
-
         return () => clearInterval(interval);
-    }, [allSeats, bookedSeats, selectedSeat]);
+    }, [allSeats, bookedSeats, reservedSeatIds]);
 
     const getSeatClass = (row) => {
         for (const [className, { rows }] of Object.entries(seatClasses)) {
@@ -57,28 +51,24 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
         return 'economy';
     };
 
-    const LegendBox = ({ label, color }) => (
-        <Stack direction="row" spacing={1} alignItems="center">
-            <Box
-                sx={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: '20% 20% 5% 5%',
-                    backgroundColor: color,
-                    border: '1px solid #ccc',
-                }}
-            />
-            <Typography variant="body2">{label}</Typography>
-        </Stack>
-    );
-
     const renderSeat = (row, seat) => {
         const seatId = `${row}${seat}`;
         const seatClass = getSeatClass(row);
         const { price, color } = seatClasses[seatClass];
-        const isBooked = bookedSeats.includes(seatId);
+        const isBooked = bookedSeats.includes(seatId) || reservedSeatIds.includes(seatId);
         const isSelected = selectedSeat?.id === seatId;
         const isJustBooked = seatId === lastBookedSeat;
+
+        const handleClick = () => {
+            if (isBooked) return;
+            onSeatSelect({
+                id: seatId,
+                row,
+                seat,
+                class: seatClass,
+                price,
+            });
+        };
 
         return (
             <Tooltip
@@ -92,16 +82,7 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
             >
                 <Fade in timeout={400}>
                     <Paper
-                        onClick={() =>
-                            !isBooked &&
-                            onSeatSelect({
-                                id: seatId,
-                                row,
-                                seat,
-                                class: seatClass,
-                                price,
-                            })
-                        }
+                        onClick={handleClick}
                         elevation={isSelected ? 6 : 1}
                         sx={{
                             width: 32,
@@ -113,7 +94,7 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                             cursor: isBooked ? 'not-allowed' : 'pointer',
                             backgroundColor: isBooked
                                 ? isJustBooked
-                                    ? '#FFD700' // Yellow flash
+                                    ? '#FFD700'
                                     : '#ccc'
                                 : isSelected
                                     ? color
@@ -124,10 +105,8 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                             transition: 'all 0.3s ease',
                             boxShadow: isSelected ? `0 0 10px ${color}` : 'none',
                             '&:hover': {
-                                backgroundColor:
-                                    !isBooked && !isSelected ? `${color}66` : undefined,
-                                boxShadow:
-                                    !isBooked && !isSelected ? `0 0 6px ${color}` : undefined,
+                                backgroundColor: !isBooked && !isSelected ? `${color}66` : undefined,
+                                boxShadow: !isBooked && !isSelected ? `0 0 6px ${color}` : undefined,
                             },
                         }}
                     >
@@ -153,6 +132,21 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                 </Grid>
             </Grid>
         ));
+
+    const LegendBox = ({ label, color }) => (
+        <Stack direction="row" spacing={1} alignItems="center">
+            <Box
+                sx={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: '20% 20% 5% 5%',
+                    backgroundColor: color,
+                    border: '1px solid #ccc',
+                }}
+            />
+            <Typography variant="body2">{label}</Typography>
+        </Stack>
+    );
 
     return (
         <Box sx={{ px: 2 }}>
@@ -185,11 +179,7 @@ const SeatMap = ({ onSeatSelect, selectedSeat }) => {
                     <Grid container direction="column" spacing={1} alignItems="flex-end">
                         {Array.from({ length: rows }, (_, i) => (
                             <Grid key={`rowNum-${i + 1}`}>
-                                <Typography
-                                    variant="caption"
-                                    sx={{ opacity: 0.6, minWidth: 20 }}
-                                >
-                                </Typography>
+                                <Typography variant="caption" sx={{ opacity: 0.6, minWidth: 20 }} />
                             </Grid>
                         ))}
                     </Grid>
