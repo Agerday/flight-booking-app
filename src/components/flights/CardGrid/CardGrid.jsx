@@ -23,7 +23,6 @@ const CardGrid = ({ items, renderItem }) => {
                         display: 'flex',
                     }}
                 >
-                    {/* Child gets full height */}
                     <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                         {renderItem(item)}
                     </Box>

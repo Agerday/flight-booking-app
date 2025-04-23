@@ -5,7 +5,6 @@ import FlightLandIcon from '@mui/icons-material/FlightLand';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import {flightClassThemes} from "../../../app/constants/flightClassThemes";
 
-
 const FlightCard = ({flight, onSelect}) => {
     const logoPath = `/airline-logos/${flight.airline.toLowerCase().replace(/\s+/g, '-')}.png`;
 
@@ -86,7 +85,7 @@ const FlightCard = ({flight, onSelect}) => {
                 display: 'flex',
                 flexDirection: 'column',
                 flexGrow: 1,
-                height: '100%', // 👈 THIS is key
+                height: '100%',
                 borderRadius: 3,
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
@@ -94,7 +93,7 @@ const FlightCard = ({flight, onSelect}) => {
                     boxShadow: 6,
                 },
             }}
-        >z
+        >
 
             <CardContent>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{mb: 2}}>

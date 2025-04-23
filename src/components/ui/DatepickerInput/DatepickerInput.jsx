@@ -1,7 +1,7 @@
 import React from 'react';
-import { Typography } from '@mui/material';
-import { Controller, useFormContext } from 'react-hook-form';
-import { DatePicker } from '@mui/x-date-pickers';
+import {Typography} from '@mui/material';
+import {Controller, useFormContext} from 'react-hook-form';
+import {DatePicker} from '@mui/x-date-pickers';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 const DatePickerInput = ({
@@ -35,7 +35,7 @@ const DatePickerInput = ({
                 <>
                     <DatePicker
                         label={label}
-                        value={field.value ?? null}
+                        value={field.value ? new Date(field.value) : null}
                         onChange={(val) => {
                             field.onChange(val);
                             field.onBlur();

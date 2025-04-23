@@ -1,13 +1,13 @@
 import React, {useRef} from 'react';
 import {Box, Button, Divider, Paper, Stack, Typography,} from '@mui/material';
-import {useBookingForm} from '../../context/BookingFormContext';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {QRCodeSVG as QRCode} from 'qrcode.react';
 import html2pdf from 'html2pdf.js';
 import {format} from 'date-fns';
+import {useSelector} from 'react-redux';
 
 const ConfirmationStep = () => {
-    const {formData} = useBookingForm();
+    const formData = useSelector(state => state.booking.formData);
     const ref = useRef();
 
     const flight = formData.flight;

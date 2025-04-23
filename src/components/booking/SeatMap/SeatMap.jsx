@@ -11,7 +11,7 @@ const seatClasses = {
     economy: { rows: [7, 8, 9, 10, 11, 12], price: 50, color: '#27ae60' },
 };
 
-const SeatMap = ({ onSeatSelect, selectedSeat, reservedSeatIds }) => {
+const SeatMap = ({ onSeatSelect, selectedSeat, reservedSeatIds, allowedClass }) => {
     const allSeats = useMemo(() => {
         const seats = [];
         for (let row = 1; row <= rows; row++) {
@@ -50,6 +50,10 @@ const SeatMap = ({ onSeatSelect, selectedSeat, reservedSeatIds }) => {
         }
         return 'economy';
     };
+
+    const visibleRows = allowedClass
+        ? seatClasses[allowedClass]?.rows || []
+        : Array.from({ length: rows }, (_, i) => i + 1);
 
     const renderSeat = (row, seat) => {
         const seatId = `${row}${seat}`;
@@ -121,14 +125,9 @@ const SeatMap = ({ onSeatSelect, selectedSeat, reservedSeatIds }) => {
         seatGroup.map((seat) => (
             <Grid key={seat}>
                 <Grid container direction="column" spacing={1} alignItems="center">
-                    {Array.from({ length: rows }, (_, i) => {
-                        const row = i + 1;
-                        return (
-                            <Grid key={`${row}${seat}`}>
-                                {renderSeat(row, seat)}
-                            </Grid>
-                        );
-                    })}
+                    {visibleRows.map((row) => (
+                        <Grid key={`${row}${seat}`}>{renderSeat(row, seat)}</Grid>
+                    ))}
                 </Grid>
             </Grid>
         ));
@@ -174,12 +173,18 @@ const SeatMap = ({ onSeatSelect, selectedSeat, reservedSeatIds }) => {
                 </Stack>
             </Slide>
 
+            <Typography variant="body2" color="text.secondary" textAlign="center" mt={1} mb={2}>
+                Showing seats for <strong>{allowedClass}</strong> class
+            </Typography>
+
             <Grid container justifyContent="center" alignItems="center" spacing={2}>
                 <Grid>
                     <Grid container direction="column" spacing={1} alignItems="flex-end">
-                        {Array.from({ length: rows }, (_, i) => (
-                            <Grid key={`rowNum-${i + 1}`}>
-                                <Typography variant="caption" sx={{ opacity: 0.6, minWidth: 20 }} />
+                        {visibleRows.map((row) => (
+                            <Grid key={`rowNum-${row}`}>
+                                <Typography variant="caption" sx={{ opacity: 0.6, minWidth: 20 }}>
+                                    {row}
+                                </Typography>
                             </Grid>
                         ))}
                     </Grid>
@@ -194,11 +199,7 @@ const SeatMap = ({ onSeatSelect, selectedSeat, reservedSeatIds }) => {
 
             <Stack direction="row" spacing={3} mt={4} justifyContent="center">
                 {Object.entries(seatClasses).map(([key, val]) => (
-                    <LegendBox
-                        key={key}
-                        label={key.charAt(0).toUpperCase() + key.slice(1)}
-                        color={val.color}
-                    />
+                    <LegendBox key={key} label={key.charAt(0).toUpperCase() + key.slice(1)} color={val.color} />
                 ))}
                 <LegendBox label="Booked" color="#ccc" />
             </Stack>

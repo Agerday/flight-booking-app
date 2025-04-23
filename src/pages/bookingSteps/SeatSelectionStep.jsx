@@ -1,19 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button, Stack } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {Box, Typography} from '@mui/material';
 import SeatMap from '../../components/booking/SeatMap/SeatMap';
-import { useBookingForm } from '../../context/BookingFormContext';
+import {useDispatch, useSelector} from 'react-redux';
+import {updateForm, updateStepValidity} from '../../redux/slices/bookingSlice';
+import PassengerNavigation from "../../components/booking/PassengerNavigation/PassengerNavigation";
 
 const SeatSelectionStep = () => {
-    const {
-        formData,
-        updateForm,
-        updateStepValidity,
-        currentStep
-    } = useBookingForm();
+    const dispatch = useDispatch();
+    const formData = useSelector(state => state.booking.formData);
+    const currentStep = useSelector(state => state.booking.currentStep);
 
+    const selectedClass = formData.flight.selectedClass;
     const passengerCount = formData.initialInfos?.passengerNumber || 1;
     const [activePassengerIndex, setActivePassengerIndex] = useState(0);
-
     const currentSeat = formData.passengers?.[activePassengerIndex]?.seat || null;
 
     const reservedSeatIds = formData.passengers
@@ -27,7 +26,7 @@ const SeatSelectionStep = () => {
             ...updatedPassengers[activePassengerIndex],
             seat,
         };
-        updateForm('passengers', updatedPassengers);
+        dispatch(updateForm({ key: 'passengers', value: updatedPassengers }));
     };
 
     const allSeatsSelected = formData.passengers.every(
@@ -35,8 +34,8 @@ const SeatSelectionStep = () => {
     );
 
     useEffect(() => {
-        updateStepValidity(currentStep, allSeatsSelected);
-    }, [allSeatsSelected, currentStep, updateStepValidity]);
+        dispatch(updateStepValidity({ step: currentStep, isValid: allSeatsSelected }));
+    }, [allSeatsSelected, currentStep, dispatch]);
 
     return (
         <Box textAlign="center">
@@ -52,6 +51,7 @@ const SeatSelectionStep = () => {
                 selectedSeat={currentSeat}
                 reservedSeatIds={reservedSeatIds}
                 onSeatSelect={handleSeatSelect}
+                allowedClass={selectedClass}
             />
 
             {currentSeat && (
@@ -61,21 +61,13 @@ const SeatSelectionStep = () => {
                 </Typography>
             )}
 
-            <Stack direction="row" justifyContent="center" spacing={2} mt={4}>
-                <Button
-                    disabled={activePassengerIndex === 0}
-                    onClick={() => setActivePassengerIndex((i) => i - 1)}
-                >
-                    ⬅️ Previous
-                </Button>
+            <PassengerNavigation
+                activeIndex={activePassengerIndex}
+                maxIndex={passengerCount}
+                onNext={() => setActivePassengerIndex(i => i + 1)}
+                onPrev={() => setActivePassengerIndex(i => i - 1)}
+            />
 
-                <Button
-                    disabled={activePassengerIndex === passengerCount - 1}
-                    onClick={() => setActivePassengerIndex((i) => i + 1)}
-                >
-                    Next ➡️
-                </Button>
-            </Stack>
         </Box>
     );
 };

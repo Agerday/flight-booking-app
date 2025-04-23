@@ -1,19 +1,45 @@
 import React, {useEffect} from 'react';
-import {useBookingForm} from '../../context/BookingFormContext';
+import {useDispatch, useSelector} from 'react-redux';
 import GenericStepper from '../../components/ui/GenericStepper/GenericStepper';
 import FlightResultsStep from '../bookingSteps/FlightResultsStep';
 import PassengerStep from '../bookingSteps/PassengerStep';
 import SeatSelectionStep from '../bookingSteps/SeatSelectionStep';
 import Confirmation from '../bookingSteps/ConfirmationStep';
-import {BookingSteps} from '../../app/constants/bookingSteps';
-import {useStepNavigation} from '../../hooks/useStepNavigation';
+import {BookingStepOrder, BookingSteps} from '../../app/constants/bookingSteps';
 import SearchFlightStep from "../bookingSteps/SearchFlightStep";
 import ExtrasStep from "../bookingSteps/ExtrasStep";
 import PaymentStep from "../bookingSteps/PaymentStep";
+import {resetBooking, resetFlight, setCurrentStep} from '../../redux/slices/bookingSlice';
 
 const BookingStepper = () => {
-    const {currentStep, setCurrentStep, isValid} = useBookingForm();
-    const {next, back} = useStepNavigation(currentStep, setCurrentStep);
+    const dispatch = useDispatch();
+    const currentStep = useSelector(state => state.booking.currentStep);
+    const stepIndex = BookingStepOrder.indexOf(currentStep);
+    const stepValidity = useSelector(state => state.booking.stepValidity);
+    const isValid = stepValidity[currentStep] === true;
+
+    const next = () => {
+        if (stepIndex < BookingStepOrder.length - 1) {
+            dispatch(setCurrentStep(BookingStepOrder[stepIndex + 1]));
+        }
+    };
+
+    const back = () => {
+        if (stepIndex > 0) {
+            const prevStep = BookingStepOrder[stepIndex - 1];
+            const current = BookingStepOrder[stepIndex];
+
+            if (current === BookingSteps.RESULTS) {
+                dispatch(resetBooking());
+            } else if (current === BookingSteps.PASSENGER) {
+                dispatch(resetFlight());
+            }
+
+            dispatch(setCurrentStep(prevStep));
+        }
+    };
+
+
 
     useEffect(() => {
         window.scrollTo({top: 0, behavior: 'smooth'});
@@ -46,7 +72,8 @@ const BookingStepper = () => {
             hidePreviousButton={{
                 [BookingSteps.SEARCH]: true,
                 [BookingSteps.CONFIRM]: true,
-            }}  hideNextButton={{
+            }}
+            hideNextButton={{
                 [BookingSteps.RESULTS]: true,
                 [BookingSteps.PAYMENT]: true,
                 [BookingSteps.CONFIRM]: true

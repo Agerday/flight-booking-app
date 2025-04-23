@@ -5,17 +5,21 @@ import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers';
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import {Controller, FormProvider, useForm} from 'react-hook-form';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import {useDispatch, useSelector} from 'react-redux';
+
 import FormInput from '../../components/ui/FormInput/FormInput';
-import {useBookingForm} from '../../context/BookingFormContext';
 import {searchFormSchema} from '../../app/validationSchemas/searchFormSchema';
 import {getAvailableDepartureDates, getFilteredLocations} from '../../app/utils/flightUtils';
 import mockFlights from '../../data/mockFlights';
 import {required} from '../../app/utils/validators';
-import { isSameDay } from 'date-fns';
-
+import {isSameDay} from 'date-fns';
+import {updateForm, updateStepValidity} from '../../redux/slices/bookingSlice';
 
 const SearchFlightStep = () => {
-    const {formData, updateForm, updateStepValidity, currentStep} = useBookingForm();
+    const dispatch = useDispatch();
+    const formData = useSelector(state => state.booking.formData);
+    const currentStep = useSelector(state => state.booking.currentStep);
+
     const methods = useForm({
         defaultValues: {
             ...formData.initialInfos
@@ -27,32 +31,40 @@ const SearchFlightStep = () => {
         control, setValue, watch,
         formState: {isValid}
     } = methods;
-    const {origin, destination, departure, tripType} = watch();
 
-    const {
-        from: fromList,
-        to: toList
-    } = useMemo(() => getFilteredLocations(mockFlights, origin, destination), [origin, destination]);
+    const {origin, destination, departure, returnDate, tripType} = watch();
+
+    const {from: fromList, to: toList} = useMemo(() =>
+            getFilteredLocations(mockFlights, origin, destination),
+        [origin, destination]
+    );
 
     const originOptions = fromList.map(label => ({label, value: label}));
     const destinationOptions = toList.map(label => ({label, value: label}));
+
     const availableDates = useMemo(() =>
             getAvailableDepartureDates(mockFlights, origin, destination),
         [origin, destination]
     );
-    useEffect(() => {
-        updateStepValidity(currentStep, isValid);
-    }, [isValid, currentStep, updateStepValidity]);
 
     useEffect(() => {
-        const subscription = watch(data => {
-            updateForm('initialInfos', {
-                ...formData.initialInfos,
-                ...data
-            });
+        dispatch(updateStepValidity({step: currentStep, isValid}));
+    }, [isValid, currentStep, dispatch]);
+
+    useEffect(() => {
+        const subscription = watch((data) => {
+            dispatch(updateForm({
+                key: 'initialInfos',
+                value: {
+                    ...formData.initialInfos,
+                    ...data,
+                    departure: data.departure instanceof Date ? data.departure.toISOString() : data.departure,
+                    returnDate: data.returnDate instanceof Date ? data.returnDate.toISOString() : data.returnDate,
+                },
+            }));
         });
         return () => subscription.unsubscribe();
-    }, [watch, formData.initialInfos, updateForm]);
+    }, [watch, formData.initialInfos, dispatch]);
 
     return (
         <Container maxWidth="md">
@@ -119,7 +131,7 @@ const SearchFlightStep = () => {
                                 render={({field, fieldState}) => (
                                     <DatePicker
                                         label="Departure Date *"
-                                        value={field.value}
+                                        value={departure ? new Date(departure) : null}
                                         onChange={field.onChange}
                                         disabled={!origin || !destination}
                                         shouldDisableDate={(date) =>
@@ -146,7 +158,7 @@ const SearchFlightStep = () => {
                                     render={({field, fieldState}) => (
                                         <DatePicker
                                             label="Return Date *"
-                                            value={field.value}
+                                            value={returnDate ? new Date(returnDate) : null}
                                             onChange={field.onChange}
                                             disabled={!origin || !destination}
                                             shouldDisableDate={(date) => !departure || new Date(date) <= new Date(departure)}

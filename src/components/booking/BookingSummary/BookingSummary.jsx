@@ -4,7 +4,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import LuggageIcon from '@mui/icons-material/Luggage';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import ShieldIcon from '@mui/icons-material/Shield';
-import {useBookingForm} from '../../../context/BookingFormContext';
+import {useSelector} from 'react-redux';
 import {generatePriceSummary} from '../../../app/utils/priceSummaryGenerator';
 
 const iconMap = {
@@ -18,14 +18,28 @@ const iconMap = {
 };
 
 const BookingSummaryBox = () => {
-    const {formData} = useBookingForm();
+    const formData = useSelector((state) => state.booking.formData);
     const summary = generatePriceSummary(formData, {icons: iconMap});
 
-    const sharedItems = summary.filter((item) => item.scope === 'global');
+    const passengerCount = formData.initialInfos.passengerNumber;
+    const selectedClass = formData.flight.selectedClass;
+    const classLabel = selectedClass?.charAt(0).toUpperCase() + selectedClass?.slice(1);
+    const flightBasePrice = formData.flight?.prices?.[selectedClass] || 0;
+    const flightTotal = flightBasePrice * passengerCount;
+
+    const returnFlight = formData.selectedReturnFlight;
+    const returnClass = returnFlight?.selectedClass || '';
+    const returnLabel = returnClass.charAt(0).toUpperCase() + returnClass.slice(1);
+    const returnBasePrice = returnFlight?.prices?.[returnClass] || 0;
+    const returnFlightTotal = returnBasePrice * passengerCount;
+
+    const sharedItems = summary
+        .filter((item) => item.scope === 'global')
+        .filter((item) => item.label !== 'Flight'); // prevent duplicate
+
     const perPassengerItems = summary.filter((item) => item.scope === 'passenger');
 
     const total = summary.reduce((sum, item) => sum + item.price, 0);
-    const passengerCount = formData.initialInfos.passengerNumber;
 
     const getItemsForPassenger = (index) =>
         perPassengerItems.filter((item) => item.passengerIndex === index);
@@ -54,6 +68,35 @@ const BookingSummaryBox = () => {
                     </Typography>
 
                     <List disablePadding>
+                        {/* Outbound Flight */}
+                        <Fade in timeout={300}>
+                            <ListItem sx={{py: 0.75, px: 0}}>
+                                <Stack direction="row" spacing={1} alignItems="center" flex={1}>
+                                    {iconMap.flight}
+                                    <Typography variant="body2">
+                                        Flight | {classLabel} x{passengerCount}
+                                    </Typography>
+                                </Stack>
+                                <Chip label={`€${flightTotal}`} size="small" color="success"/>
+                            </ListItem>
+                        </Fade>
+
+                        {/* Return Flight */}
+                        {returnFlight?.id && (
+                            <Fade in timeout={350}>
+                                <ListItem sx={{py: 0.75, px: 0}}>
+                                    <Stack direction="row" spacing={1} alignItems="center" flex={1}>
+                                        {iconMap.flight}
+                                        <Typography variant="body2">
+                                            Return Flight | {returnLabel} x{passengerCount}
+                                        </Typography>
+                                    </Stack>
+                                    <Chip label={`€${returnFlightTotal}`} size="small" color="success"/>
+                                </ListItem>
+                            </Fade>
+                        )}
+
+                        {/* Shared extras */}
                         {sharedItems.map(({label, price, icon}, i) => (
                             <Fade in timeout={400 + i * 100} key={`shared-${label}-${i}`}>
                                 <ListItem sx={{py: 0.75, px: 0}}>
@@ -66,6 +109,7 @@ const BookingSummaryBox = () => {
                             </Fade>
                         ))}
 
+                        {/* Per-passenger extras */}
                         {passengerCount > 1 && <Divider sx={{my: 1}}/>}
 
                         {Array.from({length: passengerCount}).map((_, idx) => (

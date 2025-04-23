@@ -3,45 +3,49 @@ import {Box, Divider, Typography} from '@mui/material';
 import {FormProvider, useForm} from 'react-hook-form';
 import CardGrid from '../../components/flights/CardGrid/CardGrid';
 import FlightCard from '../../components/flights/FlightCard/FlightCard';
-import {useBookingForm} from '../../context/BookingFormContext';
 import mockFlights from '../../data/mockFlights';
 import {filterFlights} from '../../app/utils/flightUtils';
 import {BookingSteps} from '../../app/constants/bookingSteps';
+import {useDispatch, useSelector} from 'react-redux';
+import {setCurrentStep, updateForm, updateStepValidity} from '../../redux/slices/bookingSlice';
 
 const FlightResultsStep = () => {
-    const {formData, updateForm, updateStepValidity, currentStep, setCurrentStep} = useBookingForm();
+    const dispatch = useDispatch();
+    const formData = useSelector(state => state.booking.formData);
+    const currentStep = useSelector(state => state.booking.currentStep);
+
     const methods = useForm({
         defaultValues: {
-            ...formData.flight
+            flight: formData.flight,
         },
         mode: 'onChange',
     });
 
     const {watch, formState: {isValid}} = methods;
     const {origin: from, destination: to, departure: departureDate} = formData.initialInfos;
+    const isReturnTrip = formData.initialInfos.tripType === 'return';
     const flights = filterFlights(mockFlights, from, to, departureDate);
-    const isReturnTrip = formData.tripType === 'return';
 
     useEffect(() => {
-        updateStepValidity(currentStep, isValid);
-    }, [isValid, currentStep, updateStepValidity]);
+        dispatch(updateStepValidity({step: currentStep, isValid}));
+    }, [isValid, currentStep, dispatch]);
 
     useEffect(() => {
         const subscription = watch((data) => {
-            updateForm('flight', data.flight);
+            dispatch(updateForm({key: 'flight', value: data.flight}));
         });
         return () => subscription.unsubscribe();
-    }, [watch, updateForm]);
+    }, [watch, dispatch]);
 
     const handleSelectFlight = (flight) => {
         if (!isReturnTrip) {
-            updateForm('flight', flight);
-            setCurrentStep(BookingSteps.PASSENGER);
+            dispatch(updateForm({key: 'flight', value: flight}));
+            dispatch(setCurrentStep(BookingSteps.PASSENGER));
         } else if (!formData.flight) {
-            updateForm('flight', flight);
+            dispatch(updateForm({key: 'flight', value: flight}));
         } else {
-            updateForm('returnFlight', flight);
-            setCurrentStep(BookingSteps.PASSENGER);
+            dispatch(updateForm({key: 'returnFlight', value: flight}));
+            dispatch(setCurrentStep(BookingSteps.PASSENGER));
         }
     };
 

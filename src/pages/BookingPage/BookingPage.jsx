@@ -2,10 +2,10 @@ import React from 'react';
 import {useTheme} from '@mui/material/styles';
 import BookingStepper from '../BookingStepper/BookingStepper';
 import BookingSummaryBox from '../../components/booking/BookingSummary/BookingSummary';
-import {useBookingForm} from '../../context/BookingFormContext';
+import {useSelector} from 'react-redux';
 
 const BookingPage = () => {
-    const { formData } = useBookingForm();
+    const formData = useSelector(state => state.booking.formData);
     const theme = useTheme();
 
     const hasSummary = !!formData.flight?.id;

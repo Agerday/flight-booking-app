@@ -1,24 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Chip,
-    Divider,
-    Stack,
-    Typography,
-} from '@mui/material';
+import React, {useEffect, useRef, useState} from 'react';
+import {Box, Button, Card, CardContent, Chip, Divider, Stack, Typography} from '@mui/material';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import CheckIcon from '@mui/icons-material/Check';
-import { FormProvider, useForm } from 'react-hook-form';
-import { useBookingForm } from '../../context/BookingFormContext';
-import { assistanceTiers } from '../../app/constants/extraTiers';
-import { extrasPricing } from '../../app/constants/extrasPricing';
+import {FormProvider, useForm} from 'react-hook-form';
+
+import {assistanceTiers} from '../../app/constants/extraTiers';
+import {extrasPricing} from '../../app/constants/extrasPricing';
 import ToggleCard from '../../components/layout/ToggleCard/ToggledCard';
 
+import {useDispatch, useSelector} from 'react-redux';
+import {updateForm, updateStepValidity} from '../../redux/slices/bookingSlice';
+import PassengerNavigation from "../../components/booking/PassengerNavigation/PassengerNavigation";
+
 const ExtrasStep = () => {
-    const { formData, updateForm, updateStepValidity, currentStep } = useBookingForm();
+    const dispatch = useDispatch();
+    const formData = useSelector(state => state.booking.formData);
+    const currentStep = useSelector(state => state.booking.currentStep);
 
     const [activePassengerIndex, setActivePassengerIndex] = useState(0);
     const passengerCount = formData.initialInfos.passengerNumber;
@@ -31,7 +28,7 @@ const ExtrasStep = () => {
         mode: 'onChange',
     });
 
-    const { watch, setValue, formState: { isValid } } = methods;
+    const {watch, setValue, formState: {isValid}} = methods;
     const watched = watch();
 
     const last = useRef({
@@ -43,8 +40,8 @@ const ExtrasStep = () => {
     const selectedTier = watched.assistance?.type || 'normal';
 
     useEffect(() => {
-        updateStepValidity(currentStep, isValid);
-    }, [isValid, currentStep, updateStepValidity]);
+        dispatch(updateStepValidity({step: currentStep, isValid}));
+    }, [isValid, currentStep, dispatch]);
 
     useEffect(() => {
         methods.reset({
@@ -55,9 +52,12 @@ const ExtrasStep = () => {
 
     useEffect(() => {
         const subscription = watch(data => {
-            updateForm('extras', {
-                assistance: data.assistance,
-            });
+            dispatch(updateForm({
+                key: 'extras',
+                value: {
+                    assistance: data.assistance,
+                }
+            }));
 
             const updatedPassengers = [...formData.passengers];
             updatedPassengers[activePassengerIndex] = {
@@ -68,15 +68,15 @@ const ExtrasStep = () => {
                     baggageInsurance: data.baggageInsurance,
                 },
             };
-            updateForm('passengers', updatedPassengers);
+            dispatch(updateForm({key: 'passengers', value: updatedPassengers}));
         });
 
         return () => subscription.unsubscribe();
-    }, [watch, updateForm, activePassengerIndex, formData.passengers]);
+    }, [watch, dispatch, activePassengerIndex, formData.passengers]);
 
     return (
         <FormProvider {...methods}>
-            <Box sx={{ mt: 4 }}>
+            <Box sx={{mt: 4}}>
                 <Typography variant="h5" align="center" gutterBottom>
                     ✨ Upgrade Your Support Level
                 </Typography>
@@ -84,7 +84,7 @@ const ExtrasStep = () => {
                     Choose the level of assistance for your trip. Premium tiers come with exclusive benefits.
                 </Typography>
 
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="center">
+                <Stack direction={{xs: 'column', md: 'row'}} spacing={2} justifyContent="center">
                     {assistanceTiers.map((tier) => {
                         const isSelected = selectedTier === tier.id;
                         return (
@@ -109,13 +109,13 @@ const ExtrasStep = () => {
                                         animation: 'blingBling 1.2s ease-in-out infinite',
                                     }),
                                     '@keyframes blingBling': {
-                                        '0%': { boxShadow: '0 0 0px rgba(255, 215, 0, 0.0)' },
-                                        '50%': { boxShadow: '0 0 10px 3px rgba(255, 215, 0, 0.6)' },
-                                        '100%': { boxShadow: '0 0 0px rgba(255, 215, 0, 0.0)' },
+                                        '0%': {boxShadow: '0 0 0px rgba(255, 215, 0, 0.0)'},
+                                        '50%': {boxShadow: '0 0 10px 3px rgba(255, 215, 0, 0.6)'},
+                                        '100%': {boxShadow: '0 0 0px rgba(255, 215, 0, 0.0)'},
                                     },
                                 }}
                             >
-                                <CardContent sx={{ flex: 1 }}>
+                                <CardContent sx={{flex: 1}}>
                                     <Stack spacing={1} alignItems="center">
                                         <Typography variant="h6">{tier.name}</Typography>
                                         <Typography variant="subtitle1" fontWeight={500}>
@@ -126,27 +126,21 @@ const ExtrasStep = () => {
                                                 label="Most Popular (Actual Scam)"
                                                 color="success"
                                                 size="small"
-                                                icon={<FlashOnIcon />}
-                                                sx={{ mt: 1 }}
+                                                icon={<FlashOnIcon/>}
+                                                sx={{mt: 1}}
                                             />
                                         )}
-                                        <Divider sx={{ width: '100%', my: 1 }} />
+                                        <Divider sx={{width: '100%', my: 1}}/>
                                         {tier.features.map((feature, i) => (
-                                            <Stack
-                                                key={i}
-                                                direction="row"
-                                                spacing={1}
-                                                alignItems="center"
-                                                width="100%"
-                                            >
-                                                <CheckIcon fontSize="small" color="success" />
+                                            <Stack key={i} direction="row" spacing={1} alignItems="center" width="100%">
+                                                <CheckIcon fontSize="small" color="success"/>
                                                 <Typography variant="body2">{feature}</Typography>
                                             </Stack>
                                         ))}
                                     </Stack>
                                 </CardContent>
 
-                                <Box sx={{ p: 2 }}>
+                                <Box sx={{p: 2}}>
                                     <Button
                                         onClick={() => {
                                             const current = watched.assistance;
@@ -154,7 +148,7 @@ const ExtrasStep = () => {
                                                 setValue('assistance', {
                                                     type: tier.id,
                                                     price: tier.price,
-                                                }, { shouldValidate: true });
+                                                }, {shouldValidate: true});
                                             }
                                         }}
                                         variant={isSelected ? 'contained' : 'outlined'}
@@ -172,23 +166,6 @@ const ExtrasStep = () => {
                 <Typography variant="h6" textAlign="center" mt={5}>
                     Extras for Passenger {activePassengerIndex + 1} of {passengerCount}
                 </Typography>
-
-                <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
-                    <Button
-                        variant="outlined"
-                        disabled={activePassengerIndex === 0}
-                        onClick={() => setActivePassengerIndex(i => i - 1)}
-                    >
-                        ⬅️ Previous Passenger
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        disabled={activePassengerIndex === passengerCount - 1}
-                        onClick={() => setActivePassengerIndex(i => i + 1)}
-                    >
-                        Next Passenger ➡️
-                    </Button>
-                </Stack>
 
                 <Box mt={5}>
                     <Typography variant="h6" gutterBottom textAlign="center">
@@ -263,6 +240,14 @@ const ExtrasStep = () => {
                             }}
                         />
                     </Stack>
+
+                    <PassengerNavigation
+                        activeIndex={activePassengerIndex}
+                        maxIndex={passengerCount}
+                        onNext={() => setActivePassengerIndex(i => i + 1)}
+                        onPrev={() => setActivePassengerIndex(i => i - 1)}
+                    />
+
                 </Box>
             </Box>
         </FormProvider>

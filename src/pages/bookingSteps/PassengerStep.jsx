@@ -1,18 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Divider, Grid, Typography } from '@mui/material';
-import { CreditCard, Email, Public, VpnKey, Wc as WcIcon } from '@mui/icons-material';
-import { FormProvider, useForm } from 'react-hook-form';
-import { hasNumber, isEmail, minLength, required } from '../../app/utils/validators';
-import { useBookingForm } from '../../context/BookingFormContext';
+import React, {useEffect, useState} from 'react';
+import {Box, Divider, Grid, Typography} from '@mui/material';
+import {CreditCard, Email, Public, VpnKey, Wc as WcIcon} from '@mui/icons-material';
+import {FormProvider, useForm} from 'react-hook-form';
 import PassportScanner from '../../components/booking/PassportScanner/PassportScanner';
 import FormInput from '../../components/ui/FormInput/FormInput';
 import DatePickerInput from '../../components/ui/DatepickerInput/DatepickerInput';
 import FrostedCard from '../../components/layout/FrostedCard/FrostedCard';
-import { genderOptions } from '../../app/constants/genderOptions';
-import { createEmptyPassenger } from '../../app/utils/formUtils';
+import {genderOptions} from '../../app/constants/genderOptions';
+import {createEmptyPassenger} from '../../app/utils/formUtils';
+import {hasNumber, isEmail, minLength, required} from '../../app/utils/validators';
+import {useDispatch, useSelector} from 'react-redux';
+import {updateForm, updateStepValidity} from '../../redux/slices/bookingSlice';
 
 const PassengerStep = () => {
-    const { formData, updateForm, updateStepValidity, currentStep } = useBookingForm();
+    const dispatch = useDispatch();
+    const formData = useSelector(state => state.booking.formData);
+    const currentStep = useSelector(state => state.booking.currentStep);
+
     const [autoFilledFields, setAutoFilledFields] = useState({});
 
     const initializePassengers = (passengers, passengerNumber) => {
@@ -22,7 +26,7 @@ const PassengerStep = () => {
                 ...p,
             }));
         }
-        return Array.from({ length: passengerNumber }, () => createEmptyPassenger());
+        return Array.from({length: passengerNumber}, () => createEmptyPassenger());
     };
 
     const methods = useForm({
@@ -39,28 +43,32 @@ const PassengerStep = () => {
     const {
         setValue,
         watch,
-        formState: { isValid, touchedFields },
+        formState: {isValid, touchedFields},
     } = methods;
 
     useEffect(() => {
-        updateStepValidity(currentStep, isValid);
-    }, [isValid, currentStep, updateStepValidity]);
+        dispatch(updateStepValidity({step: currentStep, isValid}));
+    }, [isValid, currentStep, dispatch]);
 
     useEffect(() => {
-        const subscription = watch((data) => {
-            updateForm('passengers', data.passengers);
+        watch((data) => {
+            const serializedPassengers = data.passengers.map(p => ({
+                ...p,
+                dateOfBirth: p.dateOfBirth instanceof Date ? p.dateOfBirth.toISOString() : p.dateOfBirth,
+                passportExpiry: p.passportExpiry instanceof Date ? p.passportExpiry.toISOString() : p.passportExpiry,
+            }));
+            dispatch(updateForm({ key: 'passengers', value: serializedPassengers }));
         });
-        return () => subscription.unsubscribe();
-    }, [watch, updateForm]);
+    }, [watch, dispatch]);
 
     const handleScanComplete = (scannedData, index) => {
         const filled = {};
         Object.entries(scannedData).forEach(([key, value]) => {
             const path = `passengers.${index}.${key}`;
-            setValue(path, value, { shouldValidate: true }); // don't touch field
+            setValue(path, value, {shouldValidate: true});
             filled[path] = true;
         });
-        setAutoFilledFields(prev => ({ ...prev, ...filled }));
+        setAutoFilledFields(prev => ({...prev, ...filled}));
     };
 
     const showWarning = (fieldPath) => {
@@ -73,17 +81,17 @@ const PassengerStep = () => {
             <Typography variant="h4" gutterBottom>
                 📝 Passengers Details
             </Typography>
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{my: 2}}/>
 
             <FormProvider {...methods}>
-                {Array.from({ length: formData.initialInfos.passengerNumber }).map((_, index) => (
+                {Array.from({length: formData.initialInfos.passengerNumber}).map((_, index) => (
                     <FrostedCard key={index}>
                         <Typography variant="h6" gutterBottom>
                             Passenger {index + 1}
                         </Typography>
 
                         <Box mb={2}>
-                            <PassportScanner onScanComplete={(data) => handleScanComplete(data, index)} />
+                            <PassportScanner onScanComplete={(data) => handleScanComplete(data, index)}/>
                         </Box>
 
                         <Grid container spacing={2}>
@@ -92,7 +100,7 @@ const PassengerStep = () => {
                                     name={`passengers.${index}.firstName`}
                                     label="First Name *"
                                     placeholder="e.g. Adrien"
-                                    icon={<CreditCard />}
+                                    icon={<CreditCard/>}
                                     validators={[required]}
                                     showAutofillWarning={showWarning(`passengers.${index}.firstName`)}
                                     extraWarning="Auto-filled from passport scan. Please verify."
@@ -103,7 +111,7 @@ const PassengerStep = () => {
                                     name={`passengers.${index}.lastName`}
                                     label="Last Name *"
                                     placeholder="e.g. Gerday"
-                                    icon={<CreditCard />}
+                                    icon={<CreditCard/>}
                                     validators={[required]}
                                     showAutofillWarning={showWarning(`passengers.${index}.lastName`)}
                                     extraWarning="Auto-filled from passport scan. Please verify."
@@ -114,7 +122,7 @@ const PassengerStep = () => {
                                     name={`passengers.${index}.email`}
                                     label="Email *"
                                     placeholder="e.g. adrien@airline.com"
-                                    icon={<Email />}
+                                    icon={<Email/>}
                                     type="email"
                                     validators={[required, isEmail]}
                                     showAutofillWarning={showWarning(`passengers.${index}.email`)}
@@ -126,7 +134,7 @@ const PassengerStep = () => {
                                     name={`passengers.${index}.nationality`}
                                     label="Nationality *"
                                     placeholder="e.g. Belgium"
-                                    icon={<Public />}
+                                    icon={<Public/>}
                                     validators={[required]}
                                     showAutofillWarning={showWarning(`passengers.${index}.nationality`)}
                                     extraWarning="Auto-filled from passport scan. Please verify."
@@ -136,7 +144,7 @@ const PassengerStep = () => {
                                 <FormInput
                                     name={`passengers.${index}.gender`}
                                     label="Gender *"
-                                    icon={<WcIcon />}
+                                    icon={<WcIcon/>}
                                     isSelect
                                     options={genderOptions}
                                     validators={[required]}
@@ -158,7 +166,7 @@ const PassengerStep = () => {
                                     name={`passengers.${index}.passport`}
                                     label="Passport Number *"
                                     placeholder="e.g. SPEC2014"
-                                    icon={<VpnKey />}
+                                    icon={<VpnKey/>}
                                     validators={[required, minLength(6), hasNumber]}
                                     showAutofillWarning={showWarning(`passengers.${index}.passport`)}
                                     extraWarning="Auto-filled from passport scan. Please verify."
