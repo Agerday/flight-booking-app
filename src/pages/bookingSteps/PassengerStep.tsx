@@ -1,0 +1,364 @@
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Box, Typography, Divider, Grid, Alert } from '@mui/material';
+import { FormProvider, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { updatePassengers, setStepValid } from '../../redux/slices/bookingSlice';
+import { useStepper } from '../../hooks/useStepper';
+import { BookingStep, Passenger } from '../../types';
+import { genderOptions } from '../../types/constants';
+import { passengersFormSchema, PassengersFormData } from '../../schemas/passengersSchema';
+
+import FrostedCard from '../../components/layout/FrostedCard/FrostedCard';
+import PassportScanner from '../../components/booking/PassportScanner/PassportScanner';
+import FormInput from '../../components/ui/FormInput/FormInput';
+import DatepickerInput from '../../components/ui/DatepickerInput/DatepickerInput';
+import PassengerNavigation from '../../components/booking/PassengerNavigation/PassengerNavigation';
+import {createEmptyPassenger} from "../../utils/passenger.utils";
+
+interface AutoFilledFields {
+    [fieldPath: string]: boolean;
+}
+
+interface ScannedPassportData {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    nationality?: string;
+    gender?: string;
+    dateOfBirth?: Date;
+    passport?: string;
+    passportExpiry?: Date;
+}
+
+interface PassengerFormError {
+    message: string;
+    field?: string;
+}
+
+const PassengerStep: React.FC = () => {
+    const dispatch = useAppDispatch();
+    const { setCanGoNext } = useStepper();
+    const { data: bookingData, isLoading } = useAppSelector((state) => state.booking);
+
+    const [autoFilledFields, setAutoFilledFields] = useState<AutoFilledFields>({});
+    const [currentPassengerIndex, setCurrentPassengerIndex] = useState(0);
+    const [error, setError] = useState<PassengerFormError | null>(null);
+
+    const mutableGenderOptions = useMemo(() =>
+            genderOptions.map(option => ({ ...option })),
+        []
+    );
+
+    const passengerCount = bookingData.search.passengerCount;
+
+    const initializePassengers = useMemo(() => {
+        if (bookingData.passengers?.length === passengerCount) {
+            return bookingData.passengers.map((p) => ({
+                ...createEmptyPassenger(),
+                ...p,
+                dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth) : new Date(),
+                passportExpiry: p.passportExpiry ? new Date(p.passportExpiry) : new Date(),
+            }));
+        }
+
+        return Array.from({ length: passengerCount }, () => ({
+            ...createEmptyPassenger(),
+            dateOfBirth: new Date(),
+            passportExpiry: new Date(),
+        }));
+    }, [bookingData.passengers, passengerCount]);
+
+    const methods = useForm<PassengersFormData>({
+        resolver: zodResolver(passengersFormSchema),
+        defaultValues: {
+            passengers: initializePassengers,
+        },
+        mode: 'onBlur',
+        reValidateMode: 'onChange',
+    });
+
+    const { control, setValue, watch, formState: { isValid, touchedFields, errors } } = methods;
+
+    // Update stepper navigation state
+    useEffect(() => {
+        setCanGoNext(isValid);
+        dispatch(setStepValid({ step: BookingStep.PASSENGER, isValid }));
+    }, [isValid, setCanGoNext, dispatch]);
+
+    // Watch form changes and update Redux store
+    useEffect(() => {
+        const subscription = watch((data) => {
+            try {
+                const serializedPassengers = data.passengers?.map((p, index) => ({
+                    ...p,
+                    dateOfBirth: p?.dateOfBirth instanceof Date
+                        ? p.dateOfBirth.toISOString()
+                        : p?.dateOfBirth || '',
+                    passportExpiry: p?.passportExpiry instanceof Date
+                        ? p.passportExpiry.toISOString()
+                        : p?.passportExpiry || '',
+                })) as Passenger[];
+
+                if (serializedPassengers) {
+                    dispatch(updatePassengers(serializedPassengers));
+                    setError(null);
+                }
+            } catch (err) {
+                setError({
+                    message: 'Failed to update passenger information',
+                });
+                console.error('Passenger data serialization error:', err);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [watch, dispatch]);
+
+    // Clear error when passenger changes
+    useEffect(() => {
+        setError(null);
+    }, [currentPassengerIndex]);
+
+    // Memoized passport scan handler
+    const handleScanComplete = useCallback((scannedData: ScannedPassportData, passengerIndex: number) => {
+        try {
+            const filledFields: AutoFilledFields = {};
+
+            Object.entries(scannedData).forEach(([key, value]) => {
+                if (value !== undefined && value !== '') {
+                    const fieldPath = `passengers.${passengerIndex}.${key}`;
+                    setValue(fieldPath as any, value, { shouldValidate: true });
+                    filledFields[fieldPath] = true;
+                }
+            });
+
+            setAutoFilledFields(prev => ({ ...prev, ...filledFields }));
+            setError(null);
+
+        } catch (err) {
+            setError({
+                message: 'Failed to process passport scan data',
+            });
+            console.error('Passport scan error:', err);
+        }
+    }, [setValue]);
+
+    // Memoized warning checker
+    const shouldShowWarning = useCallback((fieldPath: string): boolean => {
+        const getNestedValue = (obj: any, path: string): any => {
+            return path.split('.').reduce((acc, part) => acc?.[part], obj);
+        };
+
+        return autoFilledFields[fieldPath] && !getNestedValue(touchedFields, fieldPath);
+    }, [autoFilledFields, touchedFields]);
+
+    // Navigation handlers
+    const handleNextPassenger = useCallback(() => {
+        if (currentPassengerIndex < passengerCount - 1) {
+            setCurrentPassengerIndex(index => index + 1);
+        }
+    }, [currentPassengerIndex, passengerCount]);
+
+    const handlePreviousPassenger = useCallback(() => {
+        if (currentPassengerIndex > 0) {
+            setCurrentPassengerIndex(index => index - 1);
+        }
+    }, [currentPassengerIndex]);
+
+    // Early return for invalid state
+    if (passengerCount <= 0) {
+        return (
+            <Box sx={{ textAlign: 'center', p: 4 }}>
+                <Alert severity="error">
+                    Invalid passenger count. Please go back and select the number of passengers.
+                </Alert>
+            </Box>
+        );
+    }
+
+    return (
+        <Box>
+            <Typography variant="h4" gutterBottom>
+                📝 Passengers Details
+            </Typography>
+            <Typography variant="body1" color="text.secondary" gutterBottom>
+                Enter details for {passengerCount} passenger{passengerCount > 1 ? 's' : ''}
+            </Typography>
+            <Divider sx={{ my: 2 }} />
+
+            {error && (
+                <Alert
+                    severity="error"
+                    sx={{ mb: 3 }}
+                    onClose={() => setError(null)}
+                >
+                    {error.message}
+                </Alert>
+            )}
+
+            {/* Passenger Navigation for multiple passengers */}
+            {passengerCount > 1 && (
+                <Box sx={{ mb: 3 }}>
+                    <PassengerNavigation
+                        activeIndex={currentPassengerIndex}
+                        maxIndex={passengerCount}
+                        onNext={handleNextPassenger}
+                        onPrev={handlePreviousPassenger}
+                        disabled={isLoading}
+                    />
+                </Box>
+            )}
+
+            <FormProvider {...methods}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {Array.from({ length: passengerCount }).map((_, index) => (
+                        <FrostedCard
+                            key={index}
+                            sx={{
+                                display: passengerCount > 1 && index !== currentPassengerIndex ? 'none' : 'block'
+                            }}
+                        >
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Typography variant="h6" gutterBottom>
+                                    Passenger {index + 1}
+                                    {passengerCount > 1 && (
+                                        <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                            of {passengerCount}
+                                        </Typography>
+                                    )}
+                                </Typography>
+
+                                {/* Passport Scanner */}
+                                <PassportScanner
+                                    onScanComplete={(data) => handleScanComplete(data, index)}
+                                    disabled={isLoading}
+                                />
+
+                                {/* Form Fields */}
+                                <Grid container spacing={2}>
+                                    <Grid size={6}>
+                                        <FormInput
+                                            name={`passengers.${index}.firstName`}
+                                            control={control}
+                                            label="First Name *"
+                                            placeholder="e.g. John"
+                                            disabled={isLoading}
+                                            showAutofillWarning={shouldShowWarning(`passengers.${index}.firstName`)}
+                                            extraWarning="Auto-filled from passport scan. Please verify."
+                                        />
+                                    </Grid>
+
+                                    <Grid size={6}>
+                                        <FormInput
+                                            name={`passengers.${index}.lastName`}
+                                            control={control}
+                                            label="Last Name *"
+                                            placeholder="e.g. Smith"
+                                            disabled={isLoading}
+                                            showAutofillWarning={shouldShowWarning(`passengers.${index}.lastName`)}
+                                            extraWarning="Auto-filled from passport scan. Please verify."
+                                        />
+                                    </Grid>
+
+                                    <Grid size={6}>
+                                        <FormInput
+                                            name={`passengers.${index}.email`}
+                                            control={control}
+                                            label="Email *"
+                                            type="email"
+                                            placeholder="e.g. john.smith@email.com"
+                                            disabled={isLoading}
+                                            showAutofillWarning={shouldShowWarning(`passengers.${index}.email`)}
+                                            extraWarning="Auto-filled from passport scan. Please verify."
+                                        />
+                                    </Grid>
+
+                                    <Grid size={6}>
+                                        <FormInput
+                                            name={`passengers.${index}.nationality`}
+                                            control={control}
+                                            label="Nationality *"
+                                            placeholder="e.g. United States"
+                                            disabled={isLoading}
+                                            showAutofillWarning={shouldShowWarning(`passengers.${index}.nationality`)}
+                                            extraWarning="Auto-filled from passport scan. Please verify."
+                                        />
+                                    </Grid>
+
+                                    <Grid size={6}>
+                                        <FormInput
+                                            name={`passengers.${index}.gender`}
+                                            control={control}
+                                            label="Gender *"
+                                            isSelect
+                                            options={mutableGenderOptions}
+                                            disabled={isLoading}
+                                            showAutofillWarning={shouldShowWarning(`passengers.${index}.gender`)}
+                                            extraWarning="Auto-filled from passport scan. Please verify."
+                                        />
+                                    </Grid>
+
+                                    <Grid size={6}>
+                                        <DatepickerInput
+                                            name={`passengers.${index}.dateOfBirth`}
+                                            control={control}
+                                            label="Date of Birth *"
+                                            showAutofillWarning={shouldShowWarning(`passengers.${index}.dateOfBirth`)}
+                                            extraWarning="Auto-filled from passport scan. Please verify."
+                                        />
+                                    </Grid>
+
+                                    <Grid size={6}>
+                                        <FormInput
+                                            name={`passengers.${index}.passport`}
+                                            control={control}
+                                            label="Passport Number *"
+                                            placeholder="e.g. SPEC2014"
+                                            disabled={isLoading}
+                                            showAutofillWarning={shouldShowWarning(`passengers.${index}.passport`)}
+                                            extraWarning="Auto-filled from passport scan. Please verify."
+                                        />
+                                    </Grid>
+
+                                    <Grid size={6}>
+                                        <DatepickerInput
+                                            name={`passengers.${index}.passportExpiry`}
+                                            control={control}
+                                            label="Passport Expiration Date *"
+                                            showAutofillWarning={shouldShowWarning(`passengers.${index}.passportExpiry`)}
+                                            extraWarning="Auto-filled from passport scan. Please verify."
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </Box>
+                        </FrostedCard>
+                    ))}
+                </Box>
+            </FormProvider>
+
+            {/* Bottom Navigation for multiple passengers */}
+            {passengerCount > 1 && (
+                <Box sx={{ mt: 3 }}>
+                    <PassengerNavigation
+                        activeIndex={currentPassengerIndex}
+                        maxIndex={passengerCount}
+                        onNext={handleNextPassenger}
+                        onPrev={handlePreviousPassenger}
+                        disabled={isLoading}
+                    />
+                </Box>
+            )}
+
+            {/* Progress indicator */}
+            {!isValid && errors.passengers && (
+                <Alert severity="warning" sx={{ mt: 3 }}>
+                    Please complete all required fields to continue
+                </Alert>
+            )}
+        </Box>
+    );
+};
+
+export default PassengerStep;

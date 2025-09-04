@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import {Box, Button, Card, CardContent, Grid, InputAdornment, TextField, Typography,} from '@mui/material';
 import {Controller, useForm} from 'react-hook-form';
-import {combineValidators, isCardNumber, isCVV, isFutureDate, required,} from '../../app/utils/validators';
-import {detectCardType} from '../../app/utils/creditCardUtils';
+import {combineValidators, isCardNumber, isCVV, isFutureDate, required,} from '../../components/utils/validators';
+import {detectCardType} from '../../components/utils/creditCardUtils';
 
 
 const PaymentPage = ({totalAmount = 0, onSubmit}) => {

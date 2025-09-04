@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@hookform/resolvers": "^5.2.1",
     "@mui/icons-material": "^7.0.1",
     "@mui/material": "^7.0.1",
     "@mui/x-date-pickers": "^7.28.3",
@@ -13,7 +14,6 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
-    "bootstrap": "^5.3.5",
     "date-fns": "^2.29.3",
     "framer-motion": "^12.6.3",
     "html2canvas": "^1.4.1",
@@ -21,9 +21,8 @@
     "jspdf": "^3.0.1",
     "mrz": "^4.2.1",
     "qrcode.react": "^4.2.0",
-    "react": "^19.1.0",
-    "react-bootstrap": "^2.10.9",
-    "react-dom": "^19.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.55.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.5.0",
@@ -31,7 +30,8 @@
     "react-select-country-list": "^2.2.3",
     "tesseract.js": "^6.0.1",
     "use-deep-compare-effect": "^1.8.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "zod": "^3.25.55"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -56,5 +56,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "webpack-cli": "^6.0.1"
   }
 }

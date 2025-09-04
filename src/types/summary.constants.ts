@@ -1,0 +1,23 @@
+export const ANIMATION_DELAYS = {
+    OUTBOUND_FLIGHT: 300,
+    RETURN_FLIGHT: 350,
+    SHARED_ITEMS_BASE: 400,
+    PASSENGER_SECTION_BASE: 500,
+    PER_PASSENGER_ITEMS_BASE: 600,
+    TOTAL_SECTION: 800,
+    STAGGER: 100,
+} as const;
+
+export const CARD_STYLES = {
+    BORDER_RADIUS: 4,
+    MAX_WIDTH: 340,
+    SHADOW: 8,
+    PADDING: 3,
+} as const;
+
+export const SPACING = {
+    LIST_ITEM_Y: 0.75,
+    PASSENGER_ITEM_Y: 0.5,
+    TOTAL_ITEM_Y: 1,
+    DIVIDER_Y: 2,
+} as const;
