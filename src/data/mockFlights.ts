@@ -1,4 +1,4 @@
-import { Flight } from "../types";
+import {Flight} from "../types";
 
 const airlines = ["ReactJet", "JS Airlines", "Air React", "Vue Airways", "Angular Express"];
 const cities = ["Berlin", "Paris", "Rome", "Madrid", "London", "Amsterdam"];
@@ -42,11 +42,11 @@ for (let dayIndex = 0; dayIndex < dates.length; dayIndex++) {
 
             // Generate multiple flights per route per day (morning, afternoon, evening)
             const timeSlots = [
-                { hour: 6, label: 'Early Morning' },
-                { hour: 9, label: 'Morning' },
-                { hour: 14, label: 'Afternoon' },
-                { hour: 18, label: 'Evening' },
-                { hour: 21, label: 'Night' }
+                {hour: 6, label: 'Early Morning'},
+                {hour: 9, label: 'Morning'},
+                {hour: 14, label: 'Afternoon'},
+                {hour: 18, label: 'Evening'},
+                {hour: 21, label: 'Night'}
             ];
 
             timeSlots.forEach((slot, slotIndex) => {

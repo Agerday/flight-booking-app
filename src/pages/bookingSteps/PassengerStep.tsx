@@ -1,14 +1,14 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Box, Typography, Divider, Grid, Alert } from '@mui/material';
-import { FormProvider, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Alert, Box, Divider, Grid, Typography} from '@mui/material';
+import {FormProvider, useForm} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
 
-import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { updatePassengers, setStepValid } from '../../redux/slices/bookingSlice';
-import { useStepper } from '../../hooks/useStepper';
-import { BookingStep, Passenger } from '../../types';
-import { genderOptions } from '../../types/constants';
-import { passengersFormSchema, PassengersFormData } from '../../schemas/passengersSchema';
+import {useAppDispatch, useAppSelector} from '../../redux/hooks';
+import {setStepValid, updatePassengers} from '../../redux/slices/bookingSlice';
+import {useStepper} from '../../hooks/useStepper';
+import {BookingStep, Passenger} from '../../types';
+import {genderOptions} from '../../types/constants';
+import {PassengersFormData, passengersFormSchema} from '../../schemas/passengersSchema';
 
 import FrostedCard from '../../components/layout/FrostedCard/FrostedCard';
 import PassportScanner from '../../components/booking/PassportScanner/PassportScanner';
@@ -39,15 +39,15 @@ interface PassengerFormError {
 
 const PassengerStep: React.FC = () => {
     const dispatch = useAppDispatch();
-    const { setCanGoNext } = useStepper();
-    const { data: bookingData, isLoading } = useAppSelector((state) => state.booking);
+    const {setCanGoNext} = useStepper();
+    const {data: bookingData, isLoading} = useAppSelector((state) => state.booking);
 
     const [autoFilledFields, setAutoFilledFields] = useState<AutoFilledFields>({});
     const [currentPassengerIndex, setCurrentPassengerIndex] = useState(0);
     const [error, setError] = useState<PassengerFormError | null>(null);
 
     const mutableGenderOptions = useMemo(() =>
-            genderOptions.map(option => ({ ...option })),
+            genderOptions.map(option => ({...option})),
         []
     );
 
@@ -63,7 +63,7 @@ const PassengerStep: React.FC = () => {
             }));
         }
 
-        return Array.from({ length: passengerCount }, () => ({
+        return Array.from({length: passengerCount}, () => ({
             ...createEmptyPassenger(),
             dateOfBirth: new Date(),
             passportExpiry: new Date(),
@@ -79,15 +79,13 @@ const PassengerStep: React.FC = () => {
         reValidateMode: 'onChange',
     });
 
-    const { control, setValue, watch, formState: { isValid, touchedFields, errors } } = methods;
+    const {control, setValue, watch, formState: {isValid, touchedFields, errors}} = methods;
 
-    // Update stepper navigation state
     useEffect(() => {
         setCanGoNext(isValid);
-        dispatch(setStepValid({ step: BookingStep.PASSENGER, isValid }));
+        dispatch(setStepValid({step: BookingStep.PASSENGER, isValid}));
     }, [isValid, setCanGoNext, dispatch]);
 
-    // Watch form changes and update Redux store
     useEffect(() => {
         const subscription = watch((data) => {
             try {
@@ -116,12 +114,10 @@ const PassengerStep: React.FC = () => {
         return () => subscription.unsubscribe();
     }, [watch, dispatch]);
 
-    // Clear error when passenger changes
     useEffect(() => {
         setError(null);
     }, [currentPassengerIndex]);
 
-    // Memoized passport scan handler
     const handleScanComplete = useCallback((scannedData: ScannedPassportData, passengerIndex: number) => {
         try {
             const filledFields: AutoFilledFields = {};
@@ -129,12 +125,12 @@ const PassengerStep: React.FC = () => {
             Object.entries(scannedData).forEach(([key, value]) => {
                 if (value !== undefined && value !== '') {
                     const fieldPath = `passengers.${passengerIndex}.${key}`;
-                    setValue(fieldPath as any, value, { shouldValidate: true });
+                    setValue(fieldPath as any, value, {shouldValidate: true});
                     filledFields[fieldPath] = true;
                 }
             });
 
-            setAutoFilledFields(prev => ({ ...prev, ...filledFields }));
+            setAutoFilledFields(prev => ({...prev, ...filledFields}));
             setError(null);
 
         } catch (err) {
@@ -145,7 +141,6 @@ const PassengerStep: React.FC = () => {
         }
     }, [setValue]);
 
-    // Memoized warning checker
     const shouldShowWarning = useCallback((fieldPath: string): boolean => {
         const getNestedValue = (obj: any, path: string): any => {
             return path.split('.').reduce((acc, part) => acc?.[part], obj);
@@ -154,7 +149,6 @@ const PassengerStep: React.FC = () => {
         return autoFilledFields[fieldPath] && !getNestedValue(touchedFields, fieldPath);
     }, [autoFilledFields, touchedFields]);
 
-    // Navigation handlers
     const handleNextPassenger = useCallback(() => {
         if (currentPassengerIndex < passengerCount - 1) {
             setCurrentPassengerIndex(index => index + 1);
@@ -167,10 +161,9 @@ const PassengerStep: React.FC = () => {
         }
     }, [currentPassengerIndex]);
 
-    // Early return for invalid state
     if (passengerCount <= 0) {
         return (
-            <Box sx={{ textAlign: 'center', p: 4 }}>
+            <Box sx={{textAlign: 'center', p: 4}}>
                 <Alert severity="error">
                     Invalid passenger count. Please go back and select the number of passengers.
                 </Alert>
@@ -186,21 +179,20 @@ const PassengerStep: React.FC = () => {
             <Typography variant="body1" color="text.secondary" gutterBottom>
                 Enter details for {passengerCount} passenger{passengerCount > 1 ? 's' : ''}
             </Typography>
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{my: 2}}/>
 
             {error && (
                 <Alert
                     severity="error"
-                    sx={{ mb: 3 }}
+                    sx={{mb: 3}}
                     onClose={() => setError(null)}
                 >
                     {error.message}
                 </Alert>
             )}
 
-            {/* Passenger Navigation for multiple passengers */}
             {passengerCount > 1 && (
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <PassengerNavigation
                         activeIndex={currentPassengerIndex}
                         maxIndex={passengerCount}
@@ -212,31 +204,30 @@ const PassengerStep: React.FC = () => {
             )}
 
             <FormProvider {...methods}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {Array.from({ length: passengerCount }).map((_, index) => (
+                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                    {Array.from({length: passengerCount}).map((_, index) => (
                         <FrostedCard
                             key={index}
                             sx={{
                                 display: passengerCount > 1 && index !== currentPassengerIndex ? 'none' : 'block'
                             }}
                         >
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                 <Typography variant="h6" gutterBottom>
                                     Passenger {index + 1}
                                     {passengerCount > 1 && (
-                                        <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                        <Typography component="span" variant="body2" color="text.secondary"
+                                                    sx={{ml: 1}}>
                                             of {passengerCount}
                                         </Typography>
                                     )}
                                 </Typography>
 
-                                {/* Passport Scanner */}
                                 <PassportScanner
                                     onScanComplete={(data) => handleScanComplete(data, index)}
                                     disabled={isLoading}
                                 />
 
-                                {/* Form Fields */}
                                 <Grid container spacing={2}>
                                     <Grid size={6}>
                                         <FormInput
@@ -338,9 +329,8 @@ const PassengerStep: React.FC = () => {
                 </Box>
             </FormProvider>
 
-            {/* Bottom Navigation for multiple passengers */}
             {passengerCount > 1 && (
-                <Box sx={{ mt: 3 }}>
+                <Box sx={{mt: 3}}>
                     <PassengerNavigation
                         activeIndex={currentPassengerIndex}
                         maxIndex={passengerCount}
@@ -351,9 +341,8 @@ const PassengerStep: React.FC = () => {
                 </Box>
             )}
 
-            {/* Progress indicator */}
             {!isValid && errors.passengers && (
-                <Alert severity="warning" sx={{ mt: 3 }}>
+                <Alert severity="warning" sx={{mt: 3}}>
                     Please complete all required fields to continue
                 </Alert>
             )}

@@ -22,8 +22,8 @@ const airlineTheme = createTheme({
     },
     typography: {
         fontFamily: ['"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'].join(','),
-        h4: { fontWeight: 600 },
-        h6: { fontWeight: 500 },
+        h4: {fontWeight: 600},
+        h6: {fontWeight: 500},
     },
     components: {
         MuiTextField: {

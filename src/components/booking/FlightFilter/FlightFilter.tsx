@@ -69,7 +69,6 @@ const FlightFilter: React.FC<FlightFilterProps> = ({
             </Typography>
 
             <Stack spacing={3}>
-                {/* Price Range */}
                 <Box>
                     <Typography variant="subtitle2" gutterBottom>
                         Price Range: €{filters.priceRange[0]} - €{filters.priceRange[1]}
@@ -84,7 +83,6 @@ const FlightFilter: React.FC<FlightFilterProps> = ({
                     />
                 </Box>
 
-                {/* Airlines */}
                 <Box>
                     <Typography variant="subtitle2" gutterBottom>
                         Airlines
@@ -103,7 +101,6 @@ const FlightFilter: React.FC<FlightFilterProps> = ({
                     </Box>
                 </Box>
 
-                {/* Stops */}
                 <Box>
                     <Typography variant="subtitle2" gutterBottom>
                         Stops

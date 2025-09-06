@@ -31,7 +31,6 @@ export const getAvailableDepartureDates = (
         flight => flight.from === origin && flight.to === destination
     );
 
-    // Get unique dates using date-fns isSameDay for proper comparison
     const uniqueDates: Date[] = [];
 
     filteredFlights.forEach(flight => {

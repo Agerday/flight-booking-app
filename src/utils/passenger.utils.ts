@@ -1,4 +1,4 @@
-import { Passenger } from '../types';
+import {Passenger} from '../types';
 
 export const createEmptyPassenger = (): Omit<Passenger, 'dateOfBirth' | 'passportExpiry'> & {
     dateOfBirth?: Date;

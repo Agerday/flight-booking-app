@@ -1,6 +1,6 @@
-import { Box, Button, CircularProgress } from '@mui/material';
-import { ArrowBack, ArrowForward, CheckCircle } from '@mui/icons-material';
-import { useStepper } from "../../hooks/useStepper";
+import {Box, Button, CircularProgress} from '@mui/material';
+import {ArrowBack, ArrowForward, CheckCircle} from '@mui/icons-material';
+import {useStepper} from "../../hooks/useStepper";
 
 interface StepperNavigationProps {
     nextLabel?: string;
@@ -52,7 +52,7 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
                             variant="outlined"
                             onClick={previousStep}
                             disabled={!canGoPrev}
-                            startIcon={<ArrowBack />}
+                            startIcon={<ArrowBack/>}
                             size="large"
                         >
                             {previousLabel}
@@ -70,9 +70,9 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
                             disabled={!canGoNext}
                             endIcon={
                                 isValidating ? (
-                                    <CircularProgress size={20} color="inherit" />
+                                    <CircularProgress size={20} color="inherit"/>
                                 ) : (
-                                    <ArrowForward />
+                                    <ArrowForward/>
                                 )
                             }
                             size="large"
@@ -88,7 +88,7 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
                             variant="contained"
                             color="success"
                             disabled={!canGoNext}
-                            startIcon={<CheckCircle />}
+                            startIcon={<CheckCircle/>}
                             size="large"
                         >
                             {confirmLabel}

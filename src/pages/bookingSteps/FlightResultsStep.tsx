@@ -1,13 +1,10 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Alert, Box, Chip, Container, Divider, Grid, Tab, Tabs, Typography} from '@mui/material';
-import {useForm} from 'react-hook-form';
-import {zodResolver} from '@hookform/resolvers/zod';
-import * as z from 'zod';
 
 import {useAppDispatch, useAppSelector} from '../../redux/hooks';
 import {selectOutboundFlight, selectReturnFlight} from '../../redux/slices/bookingSlice';
 import {useStepper} from '../../hooks/useStepper';
-import {Flight, FlightClass, TripType} from '../../types/booking.types';
+import {Flight, FlightClass, TripType} from '../../types';
 import {getFilteredFlights} from '../../utils/flightSearch.utils';
 import {mockFlights} from '../../data/mockFlights';
 
@@ -15,7 +12,6 @@ import CardGrid from '../../components/layout/CardGrid/CardGrid';
 import FlightCard from '../../components/layout/FlightCard/FlightCard';
 import FlightFilter from '../../components/booking/FlightFilter/FlightFilter';
 
-// Types
 interface FlightFilters {
     priceRange: [number, number];
     airlines: string[];
@@ -39,19 +35,6 @@ interface EnhancedFlight extends Flight {
     price: number;
 }
 
-// Schemas
-const flightResultsSchema = z.object({
-    outboundFlight: z.object({}).optional(),
-    returnFlight: z.object({}).optional(),
-}).refine((data) => {
-    return Boolean(data.outboundFlight);
-}, {
-    message: "Please select an outbound flight",
-    path: ["outboundFlight"]
-});
-
-type FlightResultsFormData = z.infer<typeof flightResultsSchema>;
-
 const FlightResultsStep: React.FC = () => {
     const dispatch = useAppDispatch();
     const {setCanGoNext} = useStepper();
@@ -69,17 +52,6 @@ const FlightResultsStep: React.FC = () => {
         timeOfDay: []
     });
 
-    // Form setup
-    const {formState: {isValid}} = useForm<FlightResultsFormData>({
-        resolver: zodResolver(flightResultsSchema),
-        defaultValues: {
-            outboundFlight: outboundFlight || undefined,
-            returnFlight: returnFlight || undefined,
-        },
-        mode: 'onChange',
-    });
-
-    // Memoized flight data
     const currentFlights = useMemo(() => {
         if (!isReturnTrip) {
             return getFilteredFlights(
@@ -107,7 +79,6 @@ const FlightResultsStep: React.FC = () => {
         );
     }, [isReturnTrip, currentTab, search]);
 
-    // Memoized filtered flights
     const availableFlights = useMemo(() => {
         return currentFlights.filter(flight => {
             const minPrice = Math.min(...Object.values(flight.prices));
@@ -121,7 +92,6 @@ const FlightResultsStep: React.FC = () => {
         });
     }, [currentFlights, filters]);
 
-    // Memoized flight selection state
     const flightSelectionState = useMemo<FlightSelectionState>(() => {
         const canProceed = isReturnTrip
             ? Boolean(outboundFlight && returnFlight)
@@ -134,7 +104,6 @@ const FlightResultsStep: React.FC = () => {
         };
     }, [outboundFlight, returnFlight, isReturnTrip]);
 
-    // Memoized current direction
     const currentDirection = useMemo<FlightDirection>(() => {
         if (!isReturnTrip) {
             return {from: search.origin, to: search.destination};
@@ -145,7 +114,6 @@ const FlightResultsStep: React.FC = () => {
             : {from: search.destination, to: search.origin};
     }, [isReturnTrip, currentTab, search.origin, search.destination]);
 
-    // Initialize price range when flights change
     useEffect(() => {
         if (currentFlights.length > 0) {
             const prices = currentFlights.flatMap(f => Object.values(f.prices));
@@ -159,12 +127,10 @@ const FlightResultsStep: React.FC = () => {
         }
     }, [currentFlights]);
 
-    // Update stepper state
     useEffect(() => {
         setCanGoNext(flightSelectionState.canProceed);
     }, [flightSelectionState.canProceed, setCanGoNext]);
 
-    // Auto-scroll when selection is complete
     useEffect(() => {
         if (flightSelectionState.canProceed) {
             const timer = setTimeout(() => {
@@ -178,7 +144,6 @@ const FlightResultsStep: React.FC = () => {
         }
     }, [flightSelectionState.canProceed]);
 
-    // Event handlers
     const handleSelectFlight = useCallback((selectedFlight: EnhancedFlight) => {
         const flightWithPrice = {
             ...selectedFlight,
@@ -200,7 +165,6 @@ const FlightResultsStep: React.FC = () => {
         setFilters(newFilters);
     }, []);
 
-    // Memoized tab labels
     const getTabLabel = useCallback((index: number) => {
         const flight = index === 0 ? outboundFlight : returnFlight;
         const label = index === 0 ? 'Outbound Flight' : 'Return Flight';
@@ -218,7 +182,6 @@ const FlightResultsStep: React.FC = () => {
         );
     }, [outboundFlight, returnFlight]);
 
-    // Early return for no flights
     if (currentFlights.length === 0) {
         return (
             <Container maxWidth="lg">

@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Fade, Grid, Paper, Slide, Stack, Tooltip, Typography } from '@mui/material';
-import { FlightClass, Seat } from '../../../types';
+import React, {useEffect, useMemo, useState} from 'react';
+import {Box, Fade, Grid, Paper, Slide, Stack, Tooltip, Typography} from '@mui/material';
+import {FlightClass, Seat} from '../../../types';
 
 interface SeatMapProps {
     onSeatSelect: (seat: Seat) => void;
@@ -20,8 +20,8 @@ const leftSeats = ['A', 'B', 'C'];
 const rightSeats = ['D', 'E', 'F'];
 
 const seatClasses: Record<FlightClass, SeatClass> = {
-    [FlightClass.BUSINESS]: { rows: [1, 2, 3], price: 150, color: '#8e44ad' },
-    [FlightClass.PREMIUM]: { rows: [4, 5, 6, 7, 8], price: 100, color: '#2980b9' },
+    [FlightClass.BUSINESS]: {rows: [1, 2, 3], price: 150, color: '#8e44ad'},
+    [FlightClass.PREMIUM]: {rows: [4, 5, 6, 7, 8], price: 100, color: '#2980b9'},
     [FlightClass.ECONOMY]: {
         rows: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
         price: 50,
@@ -54,7 +54,6 @@ const SeatMap: React.FC<SeatMapProps> = ({
         setBookedSeats(shuffled.slice(0, Math.floor(allSeats.length * 0.25)));
     }, [allSeats]);
 
-    // live booking every 15s
     useEffect(() => {
         const interval = setInterval(() => {
             const freeSeats = allSeats.filter(
@@ -66,7 +65,6 @@ const SeatMap: React.FC<SeatMapProps> = ({
             setBookedSeats((prev) => [...prev, next]);
             setJustBooked(next);
 
-            // clear yellow flash after 2s
             setTimeout(() => setJustBooked(null), 2000);
         }, 15000);
 
@@ -74,19 +72,18 @@ const SeatMap: React.FC<SeatMapProps> = ({
     }, [allSeats, bookedSeats, reservedSeatIds]);
 
     const getSeatClass = (row: number): FlightClass => {
-        for (const [className, { rows }] of Object.entries(seatClasses)) {
+        for (const [className, {rows}] of Object.entries(seatClasses)) {
             if (rows.includes(row)) return className as FlightClass;
         }
         return FlightClass.ECONOMY;
     };
 
-    // show all rows of allowed class
-    const visibleRows = seatClasses[allowedClass]?.rows ?? Array.from({ length: rows }, (_, i) => i + 1);
+    const visibleRows = seatClasses[allowedClass]?.rows ?? Array.from({length: rows}, (_, i) => i + 1);
 
     const renderSeat = (row: number, seat: string) => {
         const seatId = `${row}${seat}`;
         const seatClass = getSeatClass(row);
-        const { price, color } = seatClasses[seatClass];
+        const {price, color} = seatClasses[seatClass];
         const isBooked = bookedSeats.includes(seatId) || reservedSeatIds.includes(seatId);
         const isSelected = selectedSeat?.id === seatId;
         const isJustBooked = seatId === justBooked;
@@ -106,7 +103,7 @@ const SeatMap: React.FC<SeatMapProps> = ({
         let textColor = 'black';
 
         if (isBooked) {
-            backgroundColor = isJustBooked ? '#FFD700' : '#ccc'; // yellow flash → gray
+            backgroundColor = isJustBooked ? '#FFD700' : '#ccc';
             textColor = 'white';
         } else if (isSelected) {
             backgroundColor = color;
@@ -166,7 +163,7 @@ const SeatMap: React.FC<SeatMapProps> = ({
         ));
 
     return (
-        <Box sx={{ px: 2 }}>
+        <Box sx={{px: 2}}>
             <Slide direction="down" in timeout={600}>
                 <Stack
                     direction="row"
@@ -184,7 +181,7 @@ const SeatMap: React.FC<SeatMapProps> = ({
                         mb: 2,
                     }}
                 >
-                    <Box sx={{ fontSize: 20 }}>⚠️</Box>
+                    <Box sx={{fontSize: 20}}>⚠️</Box>
                     <Typography variant="body2">
                         Seats are booking fast! Reserve yours now.
                     </Typography>
@@ -195,7 +192,7 @@ const SeatMap: React.FC<SeatMapProps> = ({
                 variant="body2"
                 color="text.secondary"
                 textAlign="center"
-                sx={{ mt: 1, mb: 2 }}
+                sx={{mt: 1, mb: 2}}
             >
                 Showing seats for <strong>{allowedClass}</strong> class
             </Typography>
@@ -207,7 +204,7 @@ const SeatMap: React.FC<SeatMapProps> = ({
                             <Grid key={`rowNum-${row}`}>
                                 <Typography
                                     variant="caption"
-                                    sx={{ opacity: 0.6, minWidth: 20 }}
+                                    sx={{opacity: 0.6, minWidth: 20}}
                                 >
                                     {row}
                                 </Typography>
@@ -218,7 +215,7 @@ const SeatMap: React.FC<SeatMapProps> = ({
 
                 {renderSeatColumn(leftSeats)}
                 <Grid>
-                    <Box sx={{ width: 24 }} />
+                    <Box sx={{width: 24}}/>
                 </Grid>
                 {renderSeatColumn(rightSeats)}
             </Grid>

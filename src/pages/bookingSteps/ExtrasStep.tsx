@@ -1,372 +1,300 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { Box, Button, Card, CardContent, Chip, Divider, Stack, Typography, Grid, Alert } from '@mui/material';
-import FlashOnIcon from '@mui/icons-material/FlashOn';
-import CheckIcon from '@mui/icons-material/Check';
-import { FormProvider, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import React, {useCallback, useEffect, useState} from 'react';
+import {Alert, Box, Button, Card, CardContent, Chip, Divider, Paper, Stack, Typography,} from '@mui/material';
+import {Check, FlashOn, Luggage, Restaurant, Security,} from '@mui/icons-material';
 
-import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { updateAssistance, updatePassenger, setStepValid, calculateTotalPrice } from '../../redux/slices/bookingSlice';
-import { useStepper } from '../../hooks/useStepper';
-import { BookingStep, type GlobalAssistance, type Passenger, type PassengerExtras } from '../../types';
-import { assistanceTiers, extrasPricing } from '../../types/constants';
+import {useAppDispatch, useAppSelector} from '../../redux/hooks';
+import {calculateTotalPrice, setStepValid, updateAssistance, updatePassenger} from '../../redux/slices/bookingSlice';
+import {useStepper} from '../../hooks/useStepper';
+import {BookingStep, GlobalAssistance, PassengerExtras} from '../../types';
+import {assistanceTiers, extrasPricing} from '../../types/constants';
 
+import FrostedCard from '../../components/layout/FrostedCard/FrostedCard';
 import PassengerNavigation from '../../components/booking/PassengerNavigation/PassengerNavigation';
 import ToggleCard from '../../components/layout/ToggleCard/ToggledCard';
 
-//
-// Types
-//
-export type AssistanceType = 'normal' | 'gold' | 'premium';
-
-interface ExtrasFormData {
-    assistance?: GlobalAssistance;
-    checkedBaggage?: PassengerExtras['checkedBaggage'];
-    meals?: PassengerExtras['meals'];
-    baggageInsurance?: PassengerExtras['baggageInsurance'];
-}
-
-interface ExtrasState {
-    currentPassenger: Passenger;
-    passengerCount: number;
-    activePassengerIndex: number;
-}
-
-//
-// Schema
-//
-const extrasSchema = z.object({
-    assistance: z.object({
-        type: z.enum(['normal', 'gold', 'premium']),
-        price: z.number(),
-    }).optional(),
-    checkedBaggage: z.object({
-        selected: z.boolean(),
-        weight: z.string(),
-        price: z.number(),
-    }).optional(),
-    meals: z.object({
-        selected: z.boolean(),
-        price: z.number(),
-    }).optional(),
-    baggageInsurance: z.object({
-        selected: z.boolean(),
-        price: z.number(),
-    }).optional(),
-});
-
-//
-// Custom hooks
-//
-const useExtrasState = (bookingData: any, activePassengerIndex: number): ExtrasState => {
-    return useMemo(() => ({
-        currentPassenger: bookingData.passengers[activePassengerIndex],
-        passengerCount: bookingData.search.passengerCount,
-        activePassengerIndex,
-    }), [bookingData.passengers, bookingData.search.passengerCount, activePassengerIndex]);
-};
-
-const useFormSync = (methods: any, extrasState: ExtrasState, assistance: GlobalAssistance | null) => {
-    useEffect(() => {
-        if (!extrasState.currentPassenger) return;
-
-        methods.setValue('assistance', assistance || undefined);
-        methods.setValue('checkedBaggage', extrasState.currentPassenger.extras?.checkedBaggage || undefined);
-        methods.setValue('meals', extrasState.currentPassenger.extras?.meals || undefined);
-        methods.setValue('baggageInsurance', extrasState.currentPassenger.extras?.baggageInsurance || undefined);
-    }, [methods, extrasState.currentPassenger, assistance]);
-};
-
-const useReduxSync = (watch: any, dispatch: any, activePassengerIndex: number) => {
-    useEffect(() => {
-        const subscription = watch((data: ExtrasFormData) => {
-            // Update global assistance
-            if (data.assistance?.type && typeof data.assistance.price === 'number') {
-                dispatch(updateAssistance(data.assistance));
-            }
-
-            // Update passenger extras
-            const passengerExtras: PassengerExtras = {
-                checkedBaggage: data.checkedBaggage,
-                meals: data.meals,
-                baggageInsurance: data.baggageInsurance,
-            };
-
-            dispatch(updatePassenger({
-                index: activePassengerIndex,
-                passenger: { extras: passengerExtras },
-            }));
-
-            dispatch(calculateTotalPrice());
-        });
-
-        return () => subscription.unsubscribe();
-    }, [watch, dispatch, activePassengerIndex]);
-};
-
-//
-// Component
-//
 const ExtrasStep: React.FC = () => {
     const dispatch = useAppDispatch();
-    const { setCanGoNext } = useStepper();
-    const { data: bookingData } = useAppSelector((state) => state.booking);
+    const {setCanGoNext} = useStepper();
+    const {data: bookingData} = useAppSelector((state) => state.booking);
 
     const [activePassengerIndex, setActivePassengerIndex] = useState(0);
-    const lastSelection = useRef({ checkedBaggage: false, meals: false, baggageInsurance: false });
 
-    const extrasState = useExtrasState(bookingData, activePassengerIndex);
+    const {passengers, assistance: globalAssistance, search} = bookingData;
+    const passengerCount = search.passengerCount;
+    const currentPassenger = passengers[activePassengerIndex];
 
-    const methods = useForm<ExtrasFormData>({
-        resolver: zodResolver(extrasSchema),
-        defaultValues: {
-            assistance: bookingData.assistance || undefined,
-            checkedBaggage: undefined,
-            meals: undefined,
-            baggageInsurance: undefined,
-        },
-        mode: 'onChange',
-    });
-
-    const { watch, setValue } = methods;
-    const watchedData = watch();
-
-    useFormSync(methods, extrasState, bookingData.assistance);
-    useReduxSync(watch, dispatch, activePassengerIndex);
-
-    // Update stepper state
     useEffect(() => {
-        const canProceed = true; // extras are optional
-        setCanGoNext(canProceed);
-        dispatch(setStepValid({ step: BookingStep.EXTRAS, isValid: canProceed }));
+        setCanGoNext(true);
+        dispatch(setStepValid({step: BookingStep.EXTRAS, isValid: true}));
     }, [setCanGoNext, dispatch]);
 
-    //
-    // Handlers
-    //
-    const handleTierSelect = useCallback((tierId: AssistanceType, tierPrice: number) => {
-        setValue('assistance', { type: tierId, price: tierPrice }, { shouldValidate: true });
-    }, [setValue]);
+    useEffect(() => {
+        dispatch(calculateTotalPrice());
+    }, [dispatch, globalAssistance, passengers]);
 
-    const handleBaggageToggle = useCallback(() => {
-        const toggled = !watchedData.checkedBaggage?.selected;
-        const weight = toggled
-            ? watchedData.checkedBaggage?.weight || extrasPricing.checkedBaggage.defaultWeight
-            : extrasPricing.checkedBaggage.defaultWeight;
-        const price = toggled
-            ? extrasPricing.checkedBaggage.weights[weight as keyof typeof extrasPricing.checkedBaggage.weights]
-            : 0;
+    const handleSelectAssistance = useCallback((tierId: string) => {
+        const tier = assistanceTiers.find(t => t.id === tierId);
+        if (!tier) return;
 
-        setValue('checkedBaggage', { selected: toggled, weight, price }, { shouldValidate: true });
-        lastSelection.current.checkedBaggage = toggled;
-    }, [setValue, watchedData.checkedBaggage]);
+        const assistance: GlobalAssistance = {
+            type: tier.id as GlobalAssistance['type'],
+            price: tier.price
+        };
+        dispatch(updateAssistance(assistance));
+    }, [dispatch]);
 
-    const handleBaggageWeightChange = useCallback((value: string) => {
-        const price = extrasPricing.checkedBaggage.weights[value as keyof typeof extrasPricing.checkedBaggage.weights];
+    const updateCurrentPassengerExtras = useCallback((extras: Partial<PassengerExtras>) => {
+        if (!currentPassenger) return;
 
-        setValue('checkedBaggage', {
-            selected: watchedData.checkedBaggage?.selected || false,
-            weight: value,
-            price,
-        }, { shouldValidate: true });
-    }, [setValue, watchedData.checkedBaggage]);
+        const updatedExtras: PassengerExtras = {
+            ...currentPassenger.extras,
+            ...extras
+        };
 
-    const handleMealsToggle = useCallback(() => {
-        const toggled = !watchedData.meals?.selected;
-        const price = toggled ? extrasPricing.meals : 0;
+        dispatch(updatePassenger({
+            index: activePassengerIndex,
+            passenger: {extras: updatedExtras}
+        }));
+    }, [dispatch, activePassengerIndex, currentPassenger]);
 
-        setValue('meals', { selected: toggled, price }, { shouldValidate: true });
-        lastSelection.current.meals = toggled;
-    }, [setValue, watchedData.meals]);
+    const handleToggleBaggage = useCallback(() => {
+        const current = currentPassenger?.extras?.checkedBaggage;
+        const wasSelected = current?.selected || false;
 
-    const handleInsuranceToggle = useCallback(() => {
-        const toggled = !watchedData.baggageInsurance?.selected;
-        const price = toggled ? extrasPricing.baggageInsurance : 0;
+        if (wasSelected) {
+            updateCurrentPassengerExtras({
+                checkedBaggage: undefined
+            });
+        } else {
+            const defaultWeight = '20';
+            updateCurrentPassengerExtras({
+                checkedBaggage: {
+                    selected: true,
+                    weight: defaultWeight,
+                    price: extrasPricing.checkedBaggage.weights[defaultWeight]
+                }
+            });
+        }
+    }, [currentPassenger, updateCurrentPassengerExtras]);
 
-        setValue('baggageInsurance', { selected: toggled, price }, { shouldValidate: true });
-        lastSelection.current.baggageInsurance = toggled;
-    }, [setValue, watchedData.baggageInsurance]);
+    const handleChangeBaggageWeight = useCallback((weight: string) => {
+        const price = extrasPricing.checkedBaggage.weights[weight as keyof typeof extrasPricing.checkedBaggage.weights];
+        updateCurrentPassengerExtras({
+            checkedBaggage: {
+                selected: true,
+                weight,
+                price
+            }
+        });
+    }, [updateCurrentPassengerExtras]);
 
-    const handleNavigation = useCallback((direction: 'next' | 'prev') => {
-        setActivePassengerIndex(prev =>
-            direction === 'next' && prev < extrasState.passengerCount - 1 ? prev + 1 :
-                direction === 'prev' && prev > 0 ? prev - 1 : prev
-        );
-    }, [extrasState.passengerCount]);
+    const handleToggleMeals = useCallback(() => {
+        const current = currentPassenger?.extras?.meals;
+        const wasSelected = current?.selected || false;
 
-    //
-    // Early return
-    //
-    if (extrasState.passengerCount <= 0 || !extrasState.currentPassenger) {
+        updateCurrentPassengerExtras({
+            meals: wasSelected
+                ? undefined
+                : {selected: true, price: extrasPricing.meals}
+        });
+    }, [currentPassenger, updateCurrentPassengerExtras]);
+
+    const handleToggleInsurance = useCallback(() => {
+        const current = currentPassenger?.extras?.baggageInsurance;
+        const wasSelected = current?.selected || false;
+
+        updateCurrentPassengerExtras({
+            baggageInsurance: wasSelected
+                ? undefined
+                : {selected: true, price: extrasPricing.baggageInsurance}
+        });
+    }, [currentPassenger, updateCurrentPassengerExtras]);
+
+    if (!currentPassenger) {
         return (
-            <Box sx={{ textAlign: 'center', p: 4 }}>
+            <Box sx={{textAlign: 'center', p: 4}}>
                 <Alert severity="error">
-                    No passenger information found. Please go back and enter passenger details.
+                    No passenger information found. Please complete passenger details first.
                 </Alert>
             </Box>
         );
     }
 
-    //
-    // Render
-    //
-    const selectedTier = watchedData.assistance?.type || 'normal';
+    const currentExtras = currentPassenger.extras || {};
 
     return (
-        <FormProvider {...methods}>
-            <Box sx={{ mt: 4 }}>
-                <Typography variant="h4" align="center" gutterBottom fontWeight={600}>
-                    Upgrade Your Support Level
-                </Typography>
-                <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 3 }}>
-                    Choose the level of assistance for your trip. Premium tiers come with exclusive benefits.
+        <Box>
+            <Typography variant="h4" gutterBottom fontWeight={600}>
+                ✨ Enhance Your Journey
+            </Typography>
+            <Typography variant="body1" color="text.secondary" gutterBottom>
+                Optional extras to make your trip more comfortable
+            </Typography>
+            <Divider sx={{my: 3}}/>
+
+            {/* Global Assistance */}
+            <FrostedCard sx={{mb: 4}}>
+                <Typography variant="h5" gutterBottom fontWeight={600}>
+                    🎯 Support Level (All Passengers)
                 </Typography>
 
-                <Grid container spacing={2} justifyContent="center">
+                <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
                     {assistanceTiers.map((tier) => {
-                        const isSelected = selectedTier === tier.id;
+                        const isSelected = globalAssistance?.type === tier.id;
 
                         return (
-                            <Grid key={tier.id} size={4}>
-                                <Card
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'space-between',
-                                        border: isSelected ? '2px solid' : '1px solid #ccc',
-                                        borderColor: isSelected ? `${tier.color}.main` : '#ccc',
-                                        boxShadow: isSelected ? 5 : 1,
-                                        minHeight: 300,
-                                        borderRadius: 3,
-                                        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-                                        '&:hover': {
-                                            transform: 'translateY(-4px)',
-                                            boxShadow: 6,
-                                        },
-                                        ...(tier.id === 'premium' && !isSelected && {
-                                            animation: 'blingBling 1.2s ease-in-out infinite',
-                                        }),
-                                        '@keyframes blingBling': {
-                                            '0%': { boxShadow: '0 0 0px rgba(255, 215, 0, 0.0)' },
-                                            '50%': { boxShadow: '0 0 10px 3px rgba(255, 215, 0, 0.6)' },
-                                            '100%': { boxShadow: '0 0 0px rgba(255, 215, 0, 0.0)' },
-                                        },
-                                    }}
-                                >
-                                    <CardContent sx={{ flex: 1 }}>
-                                        <Stack spacing={1} alignItems="center">
+                            <Card
+                                key={tier.id}
+                                sx={{
+                                    flex: 1,
+                                    cursor: 'pointer',
+                                    border: 2,
+                                    borderColor: isSelected ? `${tier.color}.main` : 'divider',
+                                    transition: 'all 0.2s',
+                                    '&:hover': {transform: 'translateY(-2px)'}
+                                }}
+                                onClick={() => handleSelectAssistance(tier.id)}
+                            >
+                                <CardContent>
+                                    <Stack spacing={2} alignItems="center">
+                                        <Box sx={{textAlign: 'center'}}>
                                             <Typography variant="h6">{tier.name}</Typography>
-                                            <Typography variant="subtitle1" fontWeight={500}>
+                                            <Typography variant="h4" color="primary">
                                                 €{tier.price}
                                             </Typography>
-                                            {(
-                                                <Chip
-                                                    label="Most Popular"
-                                                    color="success"
-                                                    size="small"
-                                                    icon={<FlashOnIcon />}
-                                                    sx={{ mt: 1 }}
-                                                />
-                                            )}
-                                            <Divider sx={{ width: '100%', my: 1 }} />
-                                            {tier.features.map((feature, index) => (
-                                                <Stack key={index} direction="row" spacing={1} alignItems="center" width="100%">
-                                                    <CheckIcon fontSize="small" color="success" />
+                                            <Chip
+                                                label="Popular"
+                                                color="success"
+                                                size="small"
+                                                icon={<FlashOn/>}
+                                            />
+                                        </Box>
+
+                                        <Stack spacing={0.5} sx={{width: '100%'}}>
+                                            {tier.features.slice(0, 3).map((feature, idx) => (
+                                                <Box key={idx} sx={{display: 'flex', gap: 1}}>
+                                                    <Check fontSize="small" color="success"/>
                                                     <Typography variant="body2">{feature}</Typography>
-                                                </Stack>
+                                                </Box>
                                             ))}
                                         </Stack>
-                                    </CardContent>
 
-                                    <Box sx={{ p: 2 }}>
                                         <Button
-                                            onClick={() => handleTierSelect(tier.id as AssistanceType, tier.price)}
-                                            variant={isSelected ? 'contained' : 'outlined'}
-                                            color={tier.color === 'default' ? 'primary' : (tier.color as any)}
                                             fullWidth
+                                            variant={isSelected ? 'contained' : 'outlined'}
+                                            color={tier.color as any}
                                         >
                                             {isSelected ? 'Selected' : 'Select'}
                                         </Button>
-                                    </Box>
-                                </Card>
-                            </Grid>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
                         );
                     })}
-                </Grid>
+                </Stack>
+            </FrostedCard>
 
-                <Typography variant="h5" textAlign="center" sx={{ mt: 5, mb: 3 }} fontWeight={500}>
-                    Additional Options
-                </Typography>
-
-                <Typography variant="h6" textAlign="center" color="text.secondary" gutterBottom>
-                    Passenger {activePassengerIndex + 1} of {extrasState.passengerCount}
-                    <Typography component="span" variant="body2" sx={{ ml: 1 }}>
-                        ({extrasState.currentPassenger.firstName} {extrasState.currentPassenger.lastName})
+            {/* Per-Passenger Extras */}
+            <FrostedCard>
+                <Box sx={{mb: 3}}>
+                    <Typography variant="h5" fontWeight={600}>
+                        🎒 Passenger Extras
                     </Typography>
-                </Typography>
+                    {passengerCount > 1 && (
+                        <Typography variant="body2" color="text.secondary">
+                            {currentPassenger.firstName} {currentPassenger.lastName}
+                            ({activePassengerIndex + 1}/{passengerCount})
+                        </Typography>
+                    )}
+                </Box>
 
-                <Grid container spacing={2} justifyContent="center" sx={{ mt: 2 }}>
-                    <Grid size={4}>
-                        <ToggleCard
-                            icon="🧳"
-                            title="Checked Baggage"
-                            description="Bring more with you by choosing your baggage weight."
-                            price={extrasPricing.checkedBaggage.weights[watchedData.checkedBaggage?.weight as keyof typeof extrasPricing.checkedBaggage.weights || extrasPricing.checkedBaggage.defaultWeight]}
-                            color="info"
-                            isSelected={watchedData.checkedBaggage?.selected === true}
-                            pulseTrigger={watchedData.checkedBaggage?.selected && !lastSelection.current.checkedBaggage}
-                            onToggle={handleBaggageToggle}
-                            dropdownLabel="Select your baggage weight:"
-                            dropdownOptions={Object.entries(extrasPricing.checkedBaggage.weights).map(([weight, price]) => ({
-                                value: weight,
-                                label: `${weight}kg`,
-                                price,
-                            }))}
-                            dropdownValue={watchedData.checkedBaggage?.weight || extrasPricing.checkedBaggage.defaultWeight}
-                            onDropdownChange={handleBaggageWeightChange}
-                        />
-                    </Grid>
+                <Stack spacing={2}>
+                    <ToggleCard
+                        icon={<Luggage/>}
+                        title="Checked Baggage"
+                        description="Add extra luggage"
+                        price={currentExtras.checkedBaggage?.price || 0}
+                        isSelected={currentExtras.checkedBaggage?.selected || false}
+                        onToggle={handleToggleBaggage}
+                        color="info"
+                        dropdownLabel="Weight"
+                        dropdownOptions={Object.entries(extrasPricing.checkedBaggage.weights).map(([weight, price]) => ({
+                            value: weight,
+                            label: `${weight}kg - €${price}`,
+                            price
+                        }))}
+                        dropdownValue={currentExtras.checkedBaggage?.weight || '20'}
+                        onDropdownChange={(e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement> | any) =>
+                            handleChangeBaggageWeight(e.target ? e.target.value : e)
+                        }
+                    />
 
-                    <Grid size={4}>
-                        <ToggleCard
-                            icon="🍽️"
-                            title="Meal"
-                            description="Enjoy a hot meal on board. Vegetarian and vegan options available."
-                            price={extrasPricing.meals}
-                            color="secondary"
-                            isSelected={watchedData.meals?.selected === true}
-                            pulseTrigger={watchedData.meals?.selected && !lastSelection.current.meals}
-                            onToggle={handleMealsToggle}
-                        />
-                    </Grid>
+                    <ToggleCard
+                        icon={<Restaurant/>}
+                        title="In-Flight Meal"
+                        description="Enjoy a delicious meal"
+                        price={extrasPricing.meals}
+                        isSelected={currentExtras.meals?.selected || false}
+                        onToggle={handleToggleMeals}
+                        color="secondary"
+                    />
 
-                    <Grid size={4}>
-                        <ToggleCard
-                            icon="🛡️"
-                            title="Baggage Insurance"
-                            description="Protect your baggage up to €1000 from loss or damage."
-                            price={extrasPricing.baggageInsurance}
-                            color="warning"
-                            isSelected={watchedData.baggageInsurance?.selected === true}
-                            pulseTrigger={watchedData.baggageInsurance?.selected && !lastSelection.current.baggageInsurance}
-                            onToggle={handleInsuranceToggle}
-                        />
-                    </Grid>
-                </Grid>
+                    <ToggleCard
+                        icon={<Security/>}
+                        title="Baggage Insurance"
+                        description="Protect your belongings"
+                        price={extrasPricing.baggageInsurance}
+                        isSelected={currentExtras.baggageInsurance?.selected || false}
+                        onToggle={handleToggleInsurance}
+                        color="warning"
+                    />
+                </Stack>
 
-                {extrasState.passengerCount > 1 && (
-                    <Box sx={{ mt: 4 }}>
+                {passengerCount > 1 && (
+                    <Box sx={{mt: 3}}>
                         <PassengerNavigation
                             activeIndex={activePassengerIndex}
-                            maxIndex={extrasState.passengerCount}
-                            onNext={() => handleNavigation('next')}
-                            onPrev={() => handleNavigation('prev')}
+                            maxIndex={passengerCount}
+                            onNext={() => setActivePassengerIndex(Math.min(activePassengerIndex + 1, passengerCount - 1))}
+                            onPrev={() => setActivePassengerIndex(Math.max(activePassengerIndex - 1, 0))}
                         />
                     </Box>
                 )}
-            </Box>
-        </FormProvider>
+            </FrostedCard>
+
+            {/* Summary */}
+            {(globalAssistance || Object.keys(currentExtras).length > 0) && (
+                <Paper sx={{mt: 3, p: 2, bgcolor: 'primary.50'}}>
+                    <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        Selected Extras
+                    </Typography>
+                    <Stack spacing={0.5}>
+                        {globalAssistance && (
+                            <Typography variant="body2">
+                                • {assistanceTiers.find(t => t.id === globalAssistance.type)?.name} Support:
+                                €{globalAssistance.price}
+                            </Typography>
+                        )}
+                        {currentExtras.checkedBaggage?.selected && (
+                            <Typography variant="body2">
+                                • Baggage ({currentExtras.checkedBaggage.weight}kg):
+                                €{currentExtras.checkedBaggage.price}
+                            </Typography>
+                        )}
+                        {currentExtras.meals?.selected && (
+                            <Typography variant="body2">
+                                • Meal: €{currentExtras.meals.price}
+                            </Typography>
+                        )}
+                        {currentExtras.baggageInsurance?.selected && (
+                            <Typography variant="body2">
+                                • Insurance: €{currentExtras.baggageInsurance.price}
+                            </Typography>
+                        )}
+                    </Stack>
+                </Paper>
+            )}
+        </Box>
     );
 };
 

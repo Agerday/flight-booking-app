@@ -1,1 +1,1 @@
-export { useStepper } from '../context/StepperContext';
+export {useStepper} from '../context/StepperContext';

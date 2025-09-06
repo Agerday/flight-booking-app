@@ -1,5 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { BookingStep, BookingData, FlightSearchData, Flight, Passenger, GlobalAssistance, TripType } from '../../types/booking.types';
+import {
+    BookingData,
+    BookingStep,
+    Flight,
+    FlightSearchData,
+    GlobalAssistance,
+    Passenger,
+    TripType
+} from '../../types';
 
 interface BookingState {
     currentStep: BookingStep;
@@ -33,7 +41,7 @@ const initialState: BookingState = {
         [BookingStep.SEARCH]: false,
         [BookingStep.RESULTS]: false,
         [BookingStep.PASSENGER]: false,
-        [BookingStep.SEATS]: false,
+        [BookingStep.SEATS]: true,
         [BookingStep.EXTRAS]: false,
         [BookingStep.PAYMENT]: false,
         [BookingStep.CONFIRMATION]: true,
@@ -47,29 +55,6 @@ const bookingSlice = createSlice({
     name: 'booking',
     initialState,
     reducers: {
-        goToStep: (state, action: PayloadAction<BookingStep>) => {
-            state.currentStep = action.payload;
-            state.error = null;
-        },
-
-        goToNextStep: (state) => {
-            const currentIndex = Object.values(BookingStep).indexOf(state.currentStep);
-            const nextStep = Object.values(BookingStep)[currentIndex + 1];
-            if (nextStep && state.stepValidation[state.currentStep]) {
-                state.currentStep = nextStep;
-                state.error = null;
-            }
-        },
-
-        goToPreviousStep: (state) => {
-            const currentIndex = Object.values(BookingStep).indexOf(state.currentStep);
-            const prevStep = Object.values(BookingStep)[currentIndex - 1];
-            if (prevStep) {
-                state.currentStep = prevStep;
-                state.error = null;
-            }
-        },
-
         setStepValid: (state, action: PayloadAction<{ step: BookingStep; isValid: boolean }>) => {
             state.stepValidation[action.payload.step] = action.payload.isValid;
         },
@@ -86,14 +71,18 @@ const bookingSlice = createSlice({
             state.data.search = { ...state.data.search, ...action.payload };
             state.stepValidation[BookingStep.RESULTS] = false;
             state.stepValidation[BookingStep.PASSENGER] = false;
-            state.stepValidation[BookingStep.SEATS] = false;
+            state.stepValidation[BookingStep.SEATS] = true;
+            state.stepValidation[BookingStep.EXTRAS] = false;
+            state.stepValidation[BookingStep.PAYMENT] = false;
         },
 
         selectOutboundFlight: (state, action: PayloadAction<Flight>) => {
             state.data.outboundFlight = action.payload;
             state.data.passengers = [];
             state.stepValidation[BookingStep.PASSENGER] = false;
-            state.stepValidation[BookingStep.SEATS] = false;
+            state.stepValidation[BookingStep.SEATS] = true;
+            state.stepValidation[BookingStep.EXTRAS] = false;
+            state.stepValidation[BookingStep.PAYMENT] = false;
         },
 
         selectReturnFlight: (state, action: PayloadAction<Flight>) => {
@@ -111,18 +100,17 @@ const bookingSlice = createSlice({
             }
         },
 
-        addPassenger: (state, action: PayloadAction<Passenger>) => {
-            state.data.passengers.push(action.payload);
-        },
-
-        removePassenger: (state, action: PayloadAction<number>) => {
-            state.data.passengers.splice(action.payload, 1);
-        },
-
         assignSeat: (state, action: PayloadAction<{ passengerId: string; seat: Passenger['seat'] }>) => {
             const passenger = state.data.passengers.find(p => p.id === action.payload.passengerId);
             if (passenger) {
                 passenger.seat = action.payload.seat;
+            }
+        },
+
+        removeSeat: (state, action: PayloadAction<{ passengerId: string }>) => {
+            const passenger = state.data.passengers.find(p => p.id === action.payload.passengerId);
+            if (passenger) {
+                passenger.seat = undefined;
             }
         },
 
@@ -133,7 +121,6 @@ const bookingSlice = createSlice({
         calculateTotalPrice: (state) => {
             let total = 0;
 
-            // Flight costs
             if (state.data.outboundFlight?.selectedPrice) {
                 total += state.data.outboundFlight.selectedPrice * state.data.search.passengerCount;
             }
@@ -141,19 +128,16 @@ const bookingSlice = createSlice({
                 total += state.data.returnFlight.selectedPrice * state.data.search.passengerCount;
             }
 
-            // Seat costs
             state.data.passengers.forEach(passenger => {
                 if (passenger.seat?.price) {
                     total += passenger.seat.price;
                 }
             });
 
-            // Global assistance cost
             if (state.data.assistance?.price) {
                 total += state.data.assistance.price;
             }
 
-            // Individual passenger extras
             state.data.passengers.forEach(passenger => {
                 if (passenger.extras?.checkedBaggage?.selected && passenger.extras.checkedBaggage.price) {
                     total += passenger.extras.checkedBaggage.price;
@@ -169,17 +153,18 @@ const bookingSlice = createSlice({
             state.data.totalPrice = total;
         },
 
-        resetBooking: () => {
-            return initialState;
-        },
-
         resetFromStep: (state, action: PayloadAction<BookingStep>) => {
             const resetStep = action.payload;
-            const stepIndex = Object.values(BookingStep).indexOf(resetStep);
+            const stepOrder = Object.values(BookingStep);
+            const stepIndex = stepOrder.indexOf(resetStep);
 
-            Object.values(BookingStep).forEach((step, index) => {
+            stepOrder.forEach((step, index) => {
                 if (index >= stepIndex) {
-                    state.stepValidation[step as BookingStep] = step === BookingStep.CONFIRMATION;
+                    if (step === BookingStep.SEATS || step === BookingStep.CONFIRMATION) {
+                        state.stepValidation[step as BookingStep] = true;
+                    } else {
+                        state.stepValidation[step as BookingStep] = false;
+                    }
                 }
             });
 
@@ -187,16 +172,25 @@ const bookingSlice = createSlice({
                 case BookingStep.RESULTS:
                     state.data.outboundFlight = null;
                     state.data.returnFlight = null;
+                    state.data.passengers = [];
+                    state.data.assistance = null;
                     break;
                 case BookingStep.PASSENGER:
                     state.data.passengers = [];
+                    state.data.assistance = null;
                     break;
                 case BookingStep.SEATS:
-                    state.data.passengers.forEach(p => { p.seat = undefined; });
+                    state.data.passengers.forEach(p => {
+                        p.seat = undefined;
+                    });
                     break;
                 case BookingStep.EXTRAS:
                     state.data.assistance = null;
-                    state.data.passengers.forEach(p => { p.extras = undefined; });
+                    state.data.passengers.forEach(p => {
+                        p.extras = undefined;
+                    });
+                    break;
+                case BookingStep.PAYMENT:
                     break;
             }
 
@@ -206,9 +200,6 @@ const bookingSlice = createSlice({
 });
 
 export const {
-    goToStep,
-    goToNextStep,
-    goToPreviousStep,
     setStepValid,
     setLoading,
     setError,
@@ -217,12 +208,10 @@ export const {
     selectReturnFlight,
     updatePassengers,
     updatePassenger,
-    addPassenger,
-    removePassenger,
     assignSeat,
+    removeSeat,
     updateAssistance,
     calculateTotalPrice,
-    resetBooking,
     resetFromStep,
 } = bookingSlice.actions;
 

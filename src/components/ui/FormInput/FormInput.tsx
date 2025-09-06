@@ -1,5 +1,5 @@
-import { InputAdornment, MenuItem, TextField, Typography } from '@mui/material';
-import { Control, Controller, FieldPath, FieldValues } from 'react-hook-form';
+import {InputAdornment, MenuItem, TextField, Typography} from '@mui/material';
+import {Control, Controller, FieldPath, FieldValues} from 'react-hook-form';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 interface FormInputProps<T extends FieldValues> {
@@ -35,7 +35,7 @@ export function FormInput<T extends FieldValues>({
         <Controller
             name={name}
             control={control}
-            render={({ field, fieldState }) => (
+            render={({field, fieldState}) => (
                 <>
                     <TextField
                         {...field}
@@ -105,7 +105,7 @@ export function FormInput<T extends FieldValues>({
                                 ml: 1,
                             }}
                         >
-                            <WarningAmberIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                            <WarningAmberIcon sx={{fontSize: 16, mr: 0.5}}/>
                             {extraWarning}
                         </Typography>
                     )}

@@ -93,9 +93,9 @@ export const flightClassThemes = {
 } as const;
 
 export const genderOptions = [
-    { value: 'male', label: 'Male' },
-    { value: 'female', label: 'Female' },
-    { value: 'other', label: 'Other' },
+    {value: 'male', label: 'Male'},
+    {value: 'female', label: 'Female'},
+    {value: 'other', label: 'Other'},
 ] as const;
 
 export const mapGender = (code?: string | null | undefined): string => {

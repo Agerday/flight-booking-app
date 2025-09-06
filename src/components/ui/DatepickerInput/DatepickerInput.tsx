@@ -1,7 +1,7 @@
 import React from 'react';
-import { Typography } from '@mui/material';
-import { Control, Controller, FieldPath, FieldValues } from 'react-hook-form';
-import { DatePicker } from '@mui/x-date-pickers';
+import {Typography} from '@mui/material';
+import {Control, Controller, FieldPath, FieldValues} from 'react-hook-form';
+import {DatePicker} from '@mui/x-date-pickers';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 type ValidationRule = (value: Date | null) => true | string;
@@ -41,7 +41,7 @@ function DatePickerInput<T extends FieldValues>({
             name={name}
             control={control}
             rules={buildValidationRules()}
-            render={({ field, fieldState }) => (
+            render={({field, fieldState}) => (
                 <>
                     <DatePicker
                         label={label}
@@ -70,7 +70,7 @@ function DatePickerInput<T extends FieldValues>({
                                 ml: 1,
                             }}
                         >
-                            <WarningAmberIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                            <WarningAmberIcon sx={{fontSize: 16, mr: 0.5}}/>
                             {extraWarning}
                         </Typography>
                     )}
