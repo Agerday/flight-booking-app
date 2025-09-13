@@ -1,27 +1,28 @@
-import React from 'react';
-import { Box } from '@mui/material';
-import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { StepContent } from '../../components/stepper/StepContent';
+import React, {useMemo} from 'react';
+import {Box} from '@mui/material';
+import {useAppDispatch, useAppSelector} from '../../redux/hooks';
+import {StepContent} from '../../components/stepper/StepContent';
 import BookingSummaryBox from '../../components/booking/Summary/BookingSummary';
-import { Step } from '../../types/stepper.types';
+import {Step} from '../../types/stepper.types';
 import Stepper from '../../components/stepper/Stepper';
 import FlightSearchStep from '../bookingSteps/FlightSearchStep';
-import FlightResultsStep from "../bookingSteps/FlightResultsStep";
-import PassengerStep from "../bookingSteps/PassengerStep";
-import SeatSelectionStep from "../bookingSteps/SeatSelectionStep";
-import ExtrasStep from "../bookingSteps/ExtrasStep";
-import PaymentStep from "../bookingSteps/PaymentStep";
-import ConfirmationStep from "../bookingSteps/ConfirmationStep";
-import { setCurrentStep, resetBooking } from '../../redux/slices/bookingSlice';
-import { BookingStep } from '../../types';
+import FlightResultsStep from '../bookingSteps/FlightResultsStep';
+import PassengerStep from '../bookingSteps/PassengerStep';
+import SeatSelectionStep from '../bookingSteps/SeatSelectionStep';
+import ExtrasStep from '../bookingSteps/ExtrasStep';
+import PaymentStep from '../bookingSteps/PaymentStep';
+import ConfirmationStep from '../bookingSteps/ConfirmationStep';
+import {resetBooking, setCurrentStep} from '../../redux/slices/bookingSlice';
+import {BookingStep} from '../../types';
 
 const BookingPage: React.FC = () => {
     const dispatch = useAppDispatch();
     const bookingState = useAppSelector(state => state.booking);
 
     const hasSummary = !!bookingState.data?.outboundFlight || !!bookingState.data?.returnFlight;
+    const showFilterSidebar = bookingState.currentStep === BookingStep.RESULTS;
 
-    const steps: Step[] = [
+    const steps: Step[] = useMemo(() => [
         { id: 'search', label: 'Search Flights' },
         { id: 'results', label: 'Select Flight' },
         { id: 'passenger', label: 'Passenger Details' },
@@ -29,7 +30,7 @@ const BookingPage: React.FC = () => {
         { id: 'extras', label: 'Add Extras' },
         { id: 'payment', label: 'Payment' },
         { id: 'confirmation', label: 'Confirmation' },
-    ];
+    ], []);
 
     const initialStep = bookingState.currentStep || BookingStep.SEARCH;
 
@@ -45,6 +46,14 @@ const BookingPage: React.FC = () => {
         console.log('Booking completed!');
     };
 
+    const getContainerTransform = () => {
+        const leftOffset = showFilterSidebar ? 150 : 0;
+        const rightOffset = hasSummary ? 125 : 0;
+        const netOffset = rightOffset - leftOffset;
+
+        return netOffset !== 0 ? `translateX(${netOffset}px)` : 'none';
+    };
+
     return (
         <Box
             sx={{
@@ -55,20 +64,57 @@ const BookingPage: React.FC = () => {
                 p: 3,
                 display: 'flex',
                 justifyContent: 'center',
+                position: 'relative',
             }}
         >
             <Box
                 sx={{
                     display: 'flex',
                     alignItems: 'flex-start',
+                    justifyContent: 'center',
                     width: '100%',
-                    maxWidth: 1200,
+                    maxWidth: 1400,
                     gap: 3,
-                    transform: hasSummary ? 'translateX(12rem)' : 'none',
-                    transition: 'transform 0.3s ease',
+                    position: 'relative',
                 }}
             >
-                <Box sx={{ flexGrow: 1 }}>
+                {/* Filter Sidebar */}
+                {showFilterSidebar && (
+                    <Box
+                        sx={{
+                            width: 280,
+                            minWidth: 280,
+                            position: 'sticky',
+                            top: 5,
+                            flexShrink: 0,
+                            opacity: 0,
+                            animation: 'slideInFromLeft 0.3s ease forwards',
+                            '@keyframes slideInFromLeft': {
+                                from: {
+                                    opacity: 0,
+                                    transform: 'translateX(-20px)',
+                                },
+                                to: {
+                                    opacity: 1,
+                                    transform: 'translateX(0)',
+                                },
+                            },
+                        }}
+                    >
+                        <div id="flight-filter-portal" />
+                    </Box>
+                )}
+
+                {/* Main Stepper Content */}
+                <Box
+                    sx={{
+                        flexGrow: 1,
+                        maxWidth: 900,
+                        width: '100%',
+                        transform: getContainerTransform(),
+                        transition: 'transform 0.3s ease',
+                    }}
+                >
                     <Stepper
                         steps={steps}
                         initialStep={initialStep}
@@ -82,7 +128,7 @@ const BookingPage: React.FC = () => {
                         </StepContent>
 
                         <StepContent stepId="results">
-                            <FlightResultsStep />
+                            <FlightResultsStep showFilterInSidebar={showFilterSidebar} />
                         </StepContent>
 
                         <StepContent stepId="passenger">
@@ -107,6 +153,7 @@ const BookingPage: React.FC = () => {
                     </Stepper>
                 </Box>
 
+                {/* Summary Sidebar */}
                 {hasSummary && (
                     <Box
                         sx={{
@@ -115,6 +162,18 @@ const BookingPage: React.FC = () => {
                             position: 'sticky',
                             top: 5,
                             flexShrink: 0,
+                            opacity: 0,
+                            animation: 'slideInFromRight 0.3s ease forwards',
+                            '@keyframes slideInFromRight': {
+                                from: {
+                                    opacity: 0,
+                                    transform: 'translateX(20px)',
+                                },
+                                to: {
+                                    opacity: 1,
+                                    transform: 'translateX(0)',
+                                },
+                            },
                         }}
                     >
                         <BookingSummaryBox />
