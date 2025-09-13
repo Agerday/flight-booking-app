@@ -193,6 +193,7 @@ const SeatSelectionStep: React.FC = () => {
                 Optional - Skip for free automatic assignment at check-in
             </Typography>
 
+            {/* Flight tabs */}
             {isReturnTrip && showSeatMap && (
                 <Paper sx={{ mb: 3 }}>
                     <Tabs
@@ -217,9 +218,11 @@ const SeatSelectionStep: React.FC = () => {
             )}
 
             <Grid container spacing={3}>
+                {/* Left column: progress, passenger list, actions */}
                 <Grid size={4}>
                     <Paper sx={{ p: 3, mb: 2 }}>
                         <Stack spacing={2}>
+                            {/* Seat selection progress + total cost */}
                             <Box>
                                 <Typography variant="subtitle2" color="text.secondary">
                                     Progress: {seatsSelected}/{maxSeats} seats
@@ -231,6 +234,7 @@ const SeatSelectionStep: React.FC = () => {
                                 )}
                             </Box>
 
+                            {/* Toggle seat map button */}
                             <Button
                                 variant={showSeatMap ? "contained" : "outlined"}
                                 startIcon={<AirlineSeatReclineNormal />}
@@ -240,6 +244,7 @@ const SeatSelectionStep: React.FC = () => {
                                 {showSeatMap ? "Hide Map" : "Select Seats"}
                             </Button>
 
+                            {/* Skip seat selection */}
                             <Button
                                 variant="text"
                                 startIcon={<ArrowForward />}
@@ -251,6 +256,7 @@ const SeatSelectionStep: React.FC = () => {
                         </Stack>
                     </Paper>
 
+                    {/* Passenger list with selected seats */}
                     <Typography variant="h6" gutterBottom>
                         Passengers
                     </Typography>
@@ -276,6 +282,7 @@ const SeatSelectionStep: React.FC = () => {
                                     }}
                                 >
                                     <Stack spacing={1}>
+                                        {/* Passenger name + check if seats assigned */}
                                         <Stack direction="row" justifyContent="space-between" alignItems="center">
                                             <Typography variant="subtitle2">
                                                 {p.firstName} {p.lastName}
@@ -283,6 +290,7 @@ const SeatSelectionStep: React.FC = () => {
                                             {hasAnySeats && <CheckCircle color="success" fontSize="small" />}
                                         </Stack>
 
+                                        {/* Outbound + Return seat chips */}
                                         <Stack direction="row" spacing={0.5} flexWrap="wrap">
                                             {seats.outbound && (
                                                 <Chip
@@ -307,13 +315,16 @@ const SeatSelectionStep: React.FC = () => {
                     </Stack>
                 </Grid>
 
+                {/* Right column: seat map or placeholder */}
                 <Grid size={8}>
                     {showSeatMap && activeFlight ? (
                         <Paper sx={{ p: 3 }}>
+                            {/* Active flight + passenger info */}
                             <Typography variant="h6" gutterBottom>
                                 {currentFlight === 'outbound' ? 'Outbound' : 'Return'} Flight - {currentPassenger?.firstName} {currentPassenger?.lastName}
                             </Typography>
 
+                            {/* Seat map */}
                             <SeatMap
                                 onSeatSelect={handleSeatSelect}
                                 selectedSeat={selectedSeat || null}
@@ -322,6 +333,7 @@ const SeatSelectionStep: React.FC = () => {
                             />
                         </Paper>
                     ) : (
+                        /* Placeholder when no seat map visible */
                         <Paper sx={{
                             minHeight: 400,
                             display: 'flex',

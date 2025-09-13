@@ -18,7 +18,7 @@ import {isSameDay} from "date-fns";
 import {zodResolver} from "@hookform/resolvers/zod";
 
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
-import {resetFromStep, setStepValid, updateSearchData} from "../../redux/slices/bookingSlice";
+import {setStepValid, updateSearchData} from "../../redux/slices/bookingSlice";
 import {FlightSearchFormData, flightSearchSchema} from "../../schemas/flightSearchSchema";
 import {getAvailableDepartureDates, getFilteredLocations} from "../../utils/flightSearch.utils";
 import {FormInput} from "../../components/ui/FormInput/FormInput";
@@ -71,8 +71,7 @@ const FlightSearchStep: React.FC = () => {
     };
 
     const canSelectReturnDate = (date: Date): boolean => {
-        if (!departure) return false;
-        if (!origin || !destination) return false;
+        if (!departure || !origin || !destination) return false;
 
         const dayAfterDeparture = new Date(departure);
         dayAfterDeparture.setDate(departure.getDate() + 1);
@@ -88,11 +87,7 @@ const FlightSearchStep: React.FC = () => {
     }, [isValid, setCanGoNext, dispatch]);
 
     useEffect(() => {
-        const subscription = watch((data, {name}) => {
-            if (name && ['origin', 'destination', 'departure', 'tripType'].includes(name)) {
-                dispatch(resetFromStep(BookingStep.RESULTS));
-            }
-
+        const subscription = watch((data) => {
             dispatch(
                 updateSearchData({
                     origin: data.origin || "",
@@ -120,8 +115,10 @@ const FlightSearchStep: React.FC = () => {
 
             <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <Grid container spacing={3}>
+                    {/* ORIGIN + SWAP + DESTINATION section */}
                     <Grid size={12}>
-                        <Grid container spacing={2} sx={{alignItems: 'center'}}>
+                        <Grid container spacing={2} sx={{alignItems: "center"}}>
+                            {/* Origin select */}
                             <Grid size={5}>
                                 <FormInput
                                     name="origin"
@@ -133,22 +130,24 @@ const FlightSearchStep: React.FC = () => {
                                 />
                             </Grid>
 
-                            <Grid size={2} sx={{textAlign: 'center'}}>
+                            {/* Swap origin/destination button */}
+                            <Grid size={2} sx={{textAlign: "center"}}>
                                 <IconButton
                                     onClick={handleSwapLocations}
                                     size="large"
                                     sx={{
-                                        bgcolor: 'primary.light',
-                                        color: 'primary.contrastText',
-                                        '&:hover': {
-                                            bgcolor: 'primary.main',
-                                        }
+                                        bgcolor: "primary.light",
+                                        color: "primary.contrastText",
+                                        "&:hover": {
+                                            bgcolor: "primary.main",
+                                        },
                                     }}
                                 >
                                     <SwapHorizIcon/>
                                 </IconButton>
                             </Grid>
 
+                            {/* Destination select */}
                             <Grid size={5}>
                                 <FormInput
                                     name="destination"
@@ -162,8 +161,8 @@ const FlightSearchStep: React.FC = () => {
                         </Grid>
                     </Grid>
 
-                    {/* Trip Type */}
-                    <Grid size={12} sx={{justifyContent: 'space-between', alignItems: 'center'}}>
+                    {/* Trip type */}
+                    <Grid size={12} sx={{justifyContent: "space-between", alignItems: "center"}}>
                         <Typography variant="subtitle1" gutterBottom fontWeight={500}>
                             Trip Type
                         </Typography>
@@ -190,8 +189,10 @@ const FlightSearchStep: React.FC = () => {
                         </RadioGroup>
                     </Grid>
 
+                    {/* Departure / Return dates */}
                     <Grid size={12}>
                         <Grid container spacing={2}>
+                            {/* Departure date */}
                             <Grid size={6}>
                                 <Controller
                                     name="departure"
@@ -222,6 +223,7 @@ const FlightSearchStep: React.FC = () => {
                                 />
                             </Grid>
 
+                            {/* Return date */}
                             {tripType === TripType.RETURN && (
                                 <Grid size={6}>
                                     <Controller
@@ -230,7 +232,7 @@ const FlightSearchStep: React.FC = () => {
                                         render={({field, fieldState}) => (
                                             <DatePicker
                                                 label="Return Date *"
-                                                value={field.value}
+                                                value={field.value || null}
                                                 onChange={field.onChange}
                                                 disabled={!origin || !destination}
                                                 shouldDisableDate={(date) => !canSelectReturnDate(date)}
@@ -256,6 +258,7 @@ const FlightSearchStep: React.FC = () => {
                         </Grid>
                     </Grid>
 
+                    {/* Passenger count */}
                     <Grid size={6}>
                         <FormInput
                             name="passengerNumber"
@@ -263,7 +266,8 @@ const FlightSearchStep: React.FC = () => {
                             label="Passengers *"
                             type="number"
                             icon={<People/>}
-                            inputProps={{min: 1, max: 9}}
+                            min={1}
+                            max={9}
                         />
                     </Grid>
                 </Grid>

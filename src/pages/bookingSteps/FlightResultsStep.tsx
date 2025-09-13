@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Alert, Box, Chip, Container, Divider, Grid, Tab, Tabs, Typography} from '@mui/material';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Alert, Box, Chip, Container, Divider, Tab, Tabs, Typography} from '@mui/material';
 
 import {useAppDispatch, useAppSelector} from '../../redux/hooks';
 import {selectOutboundFlight, selectReturnFlight} from '../../redux/slices/bookingSlice';
@@ -11,6 +11,7 @@ import {mockFlights} from '../../data/mockFlights';
 import CardGrid from '../../components/layout/CardGrid/CardGrid';
 import FlightCard from '../../components/layout/FlightCard/FlightCard';
 import FlightFilter from '../../components/booking/FlightFilter/FlightFilter';
+import SelectedFlightsSummary from "../../components/booking/Summary/SelectedFlightSummary";
 
 interface FlightFilters {
     priceRange: [number, number];
@@ -39,7 +40,6 @@ const FlightResultsStep: React.FC = () => {
     const dispatch = useAppDispatch();
     const {setCanGoNext} = useStepper();
     const {data: bookingData} = useAppSelector((state) => state.booking);
-    const bottomRef = useRef<HTMLDivElement>(null);
 
     const {search, outboundFlight, returnFlight} = bookingData;
     const isReturnTrip = search.tripType === TripType.RETURN;
@@ -134,10 +134,13 @@ const FlightResultsStep: React.FC = () => {
     useEffect(() => {
         if (flightSelectionState.canProceed) {
             const timer = setTimeout(() => {
-                bottomRef.current?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'end'
-                });
+                const btn = document.getElementById("next-step-btn");
+                if (btn) {
+                    btn.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
             }, 500);
 
             return () => clearTimeout(timer);
@@ -145,17 +148,25 @@ const FlightResultsStep: React.FC = () => {
     }, [flightSelectionState.canProceed]);
 
     const handleSelectFlight = useCallback((selectedFlight: EnhancedFlight) => {
-        const flightWithPrice = {
+        const flightWithPrice: Flight = {
             ...selectedFlight,
-            selectedPrice: selectedFlight.price
+            departureTime: String(selectedFlight.departureTime),
+            arrivalTime: String(selectedFlight.arrivalTime),
+            selectedPrice: selectedFlight.price,
         };
 
         if (!isReturnTrip || currentTab === 0) {
             dispatch(selectOutboundFlight(flightWithPrice));
+            if (isReturnTrip && !returnFlight) {
+                setCurrentTab(1);
+            }
         } else {
             dispatch(selectReturnFlight(flightWithPrice));
+            if (isReturnTrip && !outboundFlight) {
+                setCurrentTab(0);
+            }
         }
-    }, [dispatch, isReturnTrip, currentTab]);
+    }, [dispatch, isReturnTrip, currentTab, outboundFlight, returnFlight]);
 
     const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: number) => {
         setCurrentTab(newValue as 0 | 1);
@@ -202,6 +213,7 @@ const FlightResultsStep: React.FC = () => {
                     Select Your Flight{isReturnTrip ? 's' : ''}
                 </Typography>
 
+                {/* Tabs */}
                 {isReturnTrip && (
                     <Box sx={{mb: 3}}>
                         <Tabs
@@ -227,6 +239,7 @@ const FlightResultsStep: React.FC = () => {
                     </Box>
                 )}
 
+                {/* Flight direction */}
                 <Typography variant="h6" align="center" gutterBottom>
                     Flights from{' '}
                     <Box component="span" fontWeight="bold" color="primary.main">
@@ -238,6 +251,7 @@ const FlightResultsStep: React.FC = () => {
                     </Box>
                 </Typography>
 
+                {/* Guidance alerts */}
                 {isReturnTrip && (
                     <Alert
                         severity={
@@ -252,6 +266,7 @@ const FlightResultsStep: React.FC = () => {
                     </Alert>
                 )}
 
+                {/* Filters */}
                 <FlightFilter
                     flights={currentFlights}
                     filters={filters}
@@ -260,6 +275,7 @@ const FlightResultsStep: React.FC = () => {
 
                 <Divider sx={{my: 3}}/>
 
+                {/* Flight results list */}
                 {availableFlights.length > 0 ? (
                     <CardGrid
                         items={availableFlights}
@@ -282,34 +298,13 @@ const FlightResultsStep: React.FC = () => {
                     </Box>
                 )}
 
-                {(outboundFlight || returnFlight) && (
-                    <Box sx={{mt: 4, p: 3, bgcolor: 'grey.50', borderRadius: 2}}>
-                        <Typography variant="h6" gutterBottom>
-                            Selected Flights
-                        </Typography>
-
-                        <Grid container spacing={2}>
-                            {outboundFlight && (
-                                <Grid size={12}>
-                                    <Typography variant="body2">
-                                        <strong>Outbound:</strong> {outboundFlight.airline} - {search.origin} → {search.destination}
-                                    </Typography>
-                                </Grid>
-                            )}
-
-                            {returnFlight && (
-                                <Grid size={12}>
-                                    <Typography variant="body2">
-                                        <strong>Return:</strong> {returnFlight.airline} - {search.destination} → {search.origin}
-                                    </Typography>
-                                </Grid>
-                            )}
-                        </Grid>
-                    </Box>
-                )}
+                {/* Summary of selected flights */}
+                <SelectedFlightsSummary
+                    outboundFlight={outboundFlight}
+                    returnFlight={returnFlight}
+                    search={search}
+                />
             </Container>
-
-            <div ref={bottomRef}/>
         </>
     );
 };

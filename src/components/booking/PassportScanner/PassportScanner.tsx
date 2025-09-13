@@ -1,8 +1,6 @@
-import React, {useCallback, useState} from 'react';
-import {Box, Button, CircularProgress, Typography} from '@mui/material';
+import React, { useCallback, useState } from 'react';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import Tesseract from 'tesseract.js';
-import {parse as parseMRZ} from 'mrz';
-import {mapCountry, mapGender} from '../../../types/constants';
 
 interface ScannedPassportData {
     firstName?: string;
@@ -27,16 +25,6 @@ const PassportScanner: React.FC<PassportScannerProps> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>('');
 
-    const parseDate = useCallback((dateString: string): Date => {
-        const year = parseInt(dateString.slice(0, 2), 10);
-        const prefix = year < 30 ? '20' : '19';
-        const fullYear = `${prefix}${dateString.slice(0, 2)}`;
-        const month = dateString.slice(2, 4);
-        const day = dateString.slice(4, 6);
-
-        return new Date(`${fullYear}-${month}-${day}`);
-    }, []);
-
     const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file || disabled) return;
@@ -50,46 +38,66 @@ const PassportScanner: React.FC<PassportScannerProps> = ({
 
         try {
             // OCR Processing
-            const {data} = await Tesseract.recognize(file, 'eng', {
-                logger: undefined,
-            });
+            const { data } = await Tesseract.recognize(file, 'eng');
 
-            // Extract MRZ lines (Machine Readable Zone)
-            const lines = data.text
-                .split('\n')
-                .map((line) => line.replace(/[^A-Z0-9<]/gi, '').trim())
-                .filter((line) => line.length === 44);
+            const text = data.text.toUpperCase();
+            console.log('OCR Result:', text);
 
-            if (lines.length < 2) {
-                throw new Error('Could not detect valid passport MRZ (2 lines). Try a clearer image.');
+            // Simple extraction based on common passport patterns
+            const scannedData: ScannedPassportData = {};
+
+            // Try to find surname/last name
+            const surnameMatch = text.match(/(?:SURNAME|LAST\s*NAME|NOM|APELLIDOS?)[:\s]*([A-Z]+(?:\s+[A-Z]+)*)/);
+            if (surnameMatch) scannedData.lastName = surnameMatch[1].trim();
+
+            // Try to find given names/first name
+            const givenNameMatch = text.match(/(?:GIVEN\s*NAMES?|FIRST\s*NAME|PRENOM|NOMBRES?)[:\s]*([A-Z]+(?:\s+[A-Z]+)*)/);
+            if (givenNameMatch) scannedData.firstName = givenNameMatch[1].trim();
+
+            // Try to find passport number
+            const passportMatch = text.match(/(?:PASSPORT|NUMBER|NO|PASSEPORT)[:\s]*([A-Z0-9]{6,9})/);
+            if (passportMatch) scannedData.passport = passportMatch[1].trim();
+
+            // Try to find nationality
+            const nationalityMatch = text.match(/(?:NATIONALITY|NATIONALITE|NACIONALIDAD)[:\s]*([A-Z]+(?:\s+[A-Z]+)*)/);
+            if (nationalityMatch) scannedData.nationality = nationalityMatch[1].trim();
+
+            // Try to find gender/sex
+            const genderMatch = text.match(/(?:SEX|GENDER|SEXE|SEXO)[:\s]*([MF])/);
+            if (genderMatch) {
+                scannedData.gender = genderMatch[1] === 'M' ? 'male' : 'female';
             }
 
-            // Parse MRZ
-            const mrzString = lines.slice(-2).join('\n');
-            const parsedMRZ = parseMRZ(mrzString);
-
-            if (!parsedMRZ.valid) {
-                throw new Error('Failed to parse MRZ. Invalid format.');
+            // Try to find date of birth (various formats)
+            const dobMatch = text.match(/(?:DATE\s*OF\s*BIRTH|BIRTH|NE\s*LE|FECHA\s*DE\s*NACIMIENTO)[:\s]*(\d{1,2}[\s\/\-]\w{3,9}[\s\/\-]\d{2,4})/);
+            if (dobMatch) {
+                try {
+                    scannedData.dateOfBirth = new Date(dobMatch[1].replace(/\s+/g, ' '));
+                } catch (e) {
+                    console.warn('Could not parse date of birth:', dobMatch[1]);
+                }
             }
 
-            const fields = parsedMRZ.fields as any; // Type assertion to handle library typing issues
+            // Try to find expiry date
+            const expiryMatch = text.match(/(?:EXPIRY|EXPIRATION|EXPIRE|FECHA\s*DE\s*EXPIRACION)[:\s]*(\d{1,2}[\s\/\-]\w{3,9}[\s\/\-]\d{2,4})/);
+            if (expiryMatch) {
+                try {
+                    scannedData.passportExpiry = new Date(expiryMatch[1].replace(/\s+/g, ' '));
+                } catch (e) {
+                    console.warn('Could not parse expiry date:', expiryMatch[1]);
+                }
+            }
 
-            // Map parsed data to our format
-            const scannedData: ScannedPassportData = {
-                firstName: fields.givenNames?.join(' ') || '',
-                lastName: fields.surnames?.[0] || '',
-                passport: fields.documentNumber || '',
-                nationality: mapCountry(fields.nationality || ''),
-                gender: mapGender(fields.sex),
-                dateOfBirth: fields.birthDate ? parseDate(fields.birthDate) : undefined,
-                passportExpiry: fields.expirationDate ? parseDate(fields.expirationDate) : undefined,
-            };
-
-            // Remove empty fields
+            // Remove undefined values
             const filteredData = Object.fromEntries(
-                Object.entries(scannedData).filter(([, value]) => value !== '' && value !== undefined)
+                Object.entries(scannedData).filter(([_, value]) => value !== undefined)
             );
 
+            if (Object.keys(filteredData).length === 0) {
+                throw new Error('Could not extract any information. Please ensure the image is clear and try again.');
+            }
+
+            console.log('Extracted data:', filteredData);
             onScanComplete(filteredData);
 
         } catch (err) {
@@ -97,18 +105,17 @@ const PassportScanner: React.FC<PassportScannerProps> = ({
             setError(errorMessage);
         } finally {
             setLoading(false);
-            // Clean up the URL
             if (url) URL.revokeObjectURL(url);
         }
-    }, [disabled, onScanComplete, parseDate]);
+    }, [disabled, onScanComplete]);
 
     return (
-        <Box sx={{mt: 2}}>
+        <Box sx={{ mt: 2 }}>
             <Typography variant="h6" gutterBottom>
                 Autofill With Passport Image
             </Typography>
 
-            <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Upload a clear photo of your passport's information page for automatic filling
             </Typography>
 
@@ -116,7 +123,7 @@ const PassportScanner: React.FC<PassportScannerProps> = ({
                 variant="outlined"
                 component="label"
                 disabled={disabled || loading}
-                sx={{mb: 2}}
+                sx={{ mb: 2 }}
             >
                 Choose File
                 <input
@@ -127,9 +134,8 @@ const PassportScanner: React.FC<PassportScannerProps> = ({
                 />
             </Button>
 
-            {/* Image Preview */}
             {imageUrl && (
-                <Box sx={{mt: 2}}>
+                <Box sx={{ mt: 2 }}>
                     <img
                         src={imageUrl}
                         alt="Passport preview"
@@ -143,17 +149,15 @@ const PassportScanner: React.FC<PassportScannerProps> = ({
                 </Box>
             )}
 
-            {/* Loading State */}
             {loading && (
-                <Box sx={{mt: 2, display: 'flex', alignItems: 'center'}}>
-                    <CircularProgress size={24} sx={{mr: 1}}/>
+                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+                    <CircularProgress size={24} sx={{ mr: 1 }} />
                     <Typography>Extracting passport information...</Typography>
                 </Box>
             )}
 
-            {/* Error State */}
             {error && (
-                <Box sx={{mt: 2}}>
+                <Box sx={{ mt: 2 }}>
                     <Typography color="error">
                         ⚠️ {error}
                     </Typography>

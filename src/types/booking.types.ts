@@ -30,8 +30,8 @@ export interface Flight {
     airline: string;
     from: string;
     to: string;
-    departureTime: Date;
-    arrivalTime: Date;
+    departureTime: string;
+    arrivalTime: string;
     stops: number;
     prices: FlightPrices;
     selectedClass?: FlightClass;

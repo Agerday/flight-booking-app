@@ -1,61 +1,65 @@
 import React from 'react';
-import {Typography} from '@mui/material';
-import {Control, Controller, FieldPath, FieldValues} from 'react-hook-form';
-import {DatePicker} from '@mui/x-date-pickers';
+import { InputAdornment, Typography } from '@mui/material';
+import { Control, Controller, FieldPath, FieldValues } from 'react-hook-form';
+import { DatePicker } from '@mui/x-date-pickers';
+import { CalendarMonth } from '@mui/icons-material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-
-type ValidationRule = (value: Date | null) => true | string;
 
 interface DatePickerInputProps<T extends FieldValues> {
     name: FieldPath<T>;
     control: Control<T>;
     label: string;
-    validators?: ValidationRule[];
+    placeholder?: string;
+    icon?: React.ReactNode;
     showAutofillWarning?: boolean;
     extraWarning?: string;
+    disabled?: boolean;
+    shouldDisableDate?: (date: Date) => boolean;
+    minDate?: Date;
+    maxDate?: Date;
 }
 
-function DatePickerInput<T extends FieldValues>({
-                                                    name,
-                                                    control,
-                                                    label,
-                                                    validators = [],
-                                                    showAutofillWarning = false,
-                                                    extraWarning = ''
-                                                }: DatePickerInputProps<T>) {
-    const buildValidationRules = () => {
-        if (!validators.length) return {};
-        return {
-            validate: (value: Date | null) => {
-                for (const validator of validators) {
-                    const result = validator(value);
-                    if (result !== true) return result;
-                }
-                return true;
-            }
-        };
-    };
-
+export function DatePickerInput<T extends FieldValues>({
+                                                           name,
+                                                           control,
+                                                           label,
+                                                           placeholder,
+                                                           icon = <CalendarMonth />,
+                                                           showAutofillWarning = false,
+                                                           extraWarning = '',
+                                                           disabled = false,
+                                                           shouldDisableDate,
+                                                           minDate,
+                                                           maxDate,
+                                                       }: DatePickerInputProps<T>) {
     return (
         <Controller
             name={name}
             control={control}
-            rules={buildValidationRules()}
-            render={({field, fieldState}) => (
+            render={({ field, fieldState }) => (
                 <>
                     <DatePicker
                         label={label}
-                        value={field.value ? new Date(field.value) : null}
-                        onChange={(val: Date | null) => {
-                            field.onChange(val);
-                            field.onBlur();
+                        value={field.value || null}
+                        onChange={(newValue) => {
+                            field.onChange(newValue);
                         }}
+                        disabled={disabled}
+                        shouldDisableDate={shouldDisableDate}
+                        minDate={minDate}
+                        maxDate={maxDate}
                         slotProps={{
                             textField: {
                                 fullWidth: true,
+                                placeholder,
                                 error: !!fieldState.error,
                                 helperText: fieldState.error?.message || '',
-                            }
+                                InputProps: {
+                                    startAdornment: icon ? (
+                                        <InputAdornment position="start">{icon}</InputAdornment>
+                                    ) : undefined,
+                                },
+                            },
                         }}
                     />
 
@@ -70,7 +74,7 @@ function DatePickerInput<T extends FieldValues>({
                                 ml: 1,
                             }}
                         >
-                            <WarningAmberIcon sx={{fontSize: 16, mr: 0.5}}/>
+                            <WarningAmberIcon sx={{ fontSize: 16, mr: 0.5 }} />
                             {extraWarning}
                         </Typography>
                     )}

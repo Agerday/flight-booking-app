@@ -1,4 +1,4 @@
-import {InputAdornment, MenuItem, TextField, Typography} from '@mui/material';
+import {InputAdornment, MenuItem, TextField, TextFieldProps, Typography} from '@mui/material';
 import {Control, Controller, FieldPath, FieldValues} from 'react-hook-form';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
@@ -14,7 +14,9 @@ interface FormInputProps<T extends FieldValues> {
     showAutofillWarning?: boolean;
     extraWarning?: string;
     disabled?: boolean;
-    inputProps?: Record<string, any>;
+    min?: number;
+    max?: number;
+    inputProps?: TextFieldProps["inputProps"];
 }
 
 export function FormInput<T extends FieldValues>({
@@ -29,7 +31,9 @@ export function FormInput<T extends FieldValues>({
                                                      showAutofillWarning = false,
                                                      extraWarning = '',
                                                      disabled = false,
-                                                     inputProps,
+                                                     min,
+                                                     max,
+                                                     inputProps
                                                  }: FormInputProps<T>) {
     return (
         <Controller
@@ -51,18 +55,23 @@ export function FormInput<T extends FieldValues>({
                         onChange={(e) => {
                             if (type === 'number') {
                                 const value = e.target.value;
+
+                                if (value === '') {
+                                    field.onChange('');
+                                    return;
+                                }
+
+                                if (!/^\d+$/.test(value)) return;
+
                                 const numValue = parseInt(value, 10);
 
-                                if (inputProps?.min !== undefined && numValue < inputProps.min) {
-                                    field.onChange(inputProps.min);
-                                    return;
+                                if (min !== undefined && numValue < min) {
+                                    field.onChange(min);
+                                } else if (max !== undefined && numValue > max) {
+                                    field.onChange(max);
+                                } else {
+                                    field.onChange(numValue);
                                 }
-                                if (inputProps?.max !== undefined && numValue > inputProps.max) {
-                                    field.onChange(inputProps.max);
-                                    return;
-                                }
-
-                                field.onChange(isNaN(numValue) ? inputProps?.min || 1 : numValue);
                             } else {
                                 field.onChange(e);
                             }
@@ -71,19 +80,11 @@ export function FormInput<T extends FieldValues>({
                             startAdornment: icon ? (
                                 <InputAdornment position="start">{icon}</InputAdornment>
                             ) : undefined,
-                        }}
-                        inputProps={{
-                            ...inputProps,
-                            ...(type === 'number' && {
-                                onKeyDown: (e: React.KeyboardEvent) => {
-                                    if (
-                                        !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key) &&
-                                        !/[0-9]/.test(e.key)
-                                    ) {
-                                        e.preventDefault();
-                                    }
-                                }
-                            })
+                            inputProps: {
+                                min,
+                                max,
+                                ...inputProps,
+                            }
                         }}
                     >
                         {isSelect &&

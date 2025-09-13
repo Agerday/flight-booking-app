@@ -131,6 +131,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({totalAmount, onSubmit}) => {
                         Payment Details
                     </Typography>
 
+                    {/* Error alert for payment failures */}
                     {paymentState.error && (
                         <Alert severity="error" onClose={clearError} sx={{mb: 2}}>
                             {paymentState.error}
@@ -138,6 +139,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({totalAmount, onSubmit}) => {
                     )}
 
                     <Grid container spacing={2}>
+                        {/* Cardholder name */}
                         <Grid size={12}>
                             <FormInput
                                 name="cardName"
@@ -148,6 +150,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({totalAmount, onSubmit}) => {
                             />
                         </Grid>
 
+                        {/* Card number with dynamic icon */}
                         <Grid size={12}>
                             <Box sx={{position: 'relative'}}>
                                 <FormInput
@@ -179,6 +182,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({totalAmount, onSubmit}) => {
                             </Box>
                         </Grid>
 
+                        {/* Expiration date */}
                         <Grid size={6}>
                             <FormInput
                                 name="expirationDate"
@@ -197,6 +201,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({totalAmount, onSubmit}) => {
                             />
                         </Grid>
 
+                        {/* CVV */}
                         <Grid size={6}>
                             <FormInput
                                 name="cvv"
@@ -216,8 +221,10 @@ const PaymentPage: React.FC<PaymentPageProps> = ({totalAmount, onSubmit}) => {
                         </Grid>
                     </Grid>
 
+                    {/* Security reassurance */}
                     <SecurityNotice/>
 
+                    {/* Submit button */}
                     <Box sx={{mt: 3}}>
                         <Button
                             type="submit"
@@ -230,12 +237,12 @@ const PaymentPage: React.FC<PaymentPageProps> = ({totalAmount, onSubmit}) => {
                                 py: 1.5,
                                 fontWeight: 600,
                                 textTransform: 'none',
-                                '&:disabled': {
-                                    opacity: 0.6,
-                                },
+                                '&:disabled': {opacity: 0.6},
                             }}
                         >
-                            {paymentState.isSubmitting ? 'Processing...' : `Pay €${totalAmount} & Confirm Booking`}
+                            {paymentState.isSubmitting
+                                ? 'Processing...'
+                                : `Pay €${totalAmount} & Confirm Booking`}
                         </Button>
                     </Box>
                 </CardContent>

@@ -42,7 +42,6 @@ for (let dayIndex = 0; dayIndex < dates.length; dayIndex++) {
 
             // Generate multiple flights per route per day (morning, afternoon, evening)
             const timeSlots = [
-                {hour: 6, label: 'Early Morning'},
                 {hour: 9, label: 'Morning'},
                 {hour: 14, label: 'Afternoon'},
                 {hour: 18, label: 'Evening'},
@@ -67,8 +66,8 @@ for (let dayIndex = 0; dayIndex < dates.length; dayIndex++) {
                         airline,
                         from,
                         to,
-                        departureTime,
-                        arrivalTime,
+                        departureTime: departureTime.toISOString(),
+                        arrivalTime: arrivalTime.toISOString(),
                         stops,
                         prices: generatePrices(dayIndex, airlineIndex, routeIndex + slotIndex),
                     });

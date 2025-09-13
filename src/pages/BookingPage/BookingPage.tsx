@@ -1,9 +1,9 @@
 import React from 'react';
-import {Box} from '@mui/material';
-import {useAppSelector} from '../../redux/hooks';
-import {StepContent} from '../../components/stepper/StepContent';
+import { Box } from '@mui/material';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { StepContent } from '../../components/stepper/StepContent';
 import BookingSummaryBox from '../../components/booking/Summary/BookingSummary';
-import {Step} from '../../types/stepper.types';
+import { Step } from '../../types/stepper.types';
 import Stepper from '../../components/stepper/Stepper';
 import FlightSearchStep from '../bookingSteps/FlightSearchStep';
 import FlightResultsStep from "../bookingSteps/FlightResultsStep";
@@ -12,26 +12,33 @@ import SeatSelectionStep from "../bookingSteps/SeatSelectionStep";
 import ExtrasStep from "../bookingSteps/ExtrasStep";
 import PaymentStep from "../bookingSteps/PaymentStep";
 import ConfirmationStep from "../bookingSteps/ConfirmationStep";
-
+import { setCurrentStep, resetBooking } from '../../redux/slices/bookingSlice';
+import { BookingStep } from '../../types';
 
 const BookingPage: React.FC = () => {
+    const dispatch = useAppDispatch();
     const bookingState = useAppSelector(state => state.booking);
 
-    const hasSummary = !!bookingState.data?.outboundFlight;
+    const hasSummary = !!bookingState.data?.outboundFlight || !!bookingState.data?.returnFlight;
 
     const steps: Step[] = [
-        {id: 'search', label: 'Search Flights'},
-        {id: 'results', label: 'Select Flight'},
-        {id: 'passenger', label: 'Passenger Details'},
-        {id: 'seats', label: 'Choose Seats'},
-        {id: 'extras', label: 'Add Extras'},
-        {id: 'payment', label: 'Payment'},
-        {id: 'confirmation', label: 'Confirmation'},
+        { id: 'search', label: 'Search Flights' },
+        { id: 'results', label: 'Select Flight' },
+        { id: 'passenger', label: 'Passenger Details' },
+        { id: 'seats', label: 'Choose Seats' },
+        { id: 'extras', label: 'Add Extras' },
+        { id: 'payment', label: 'Payment' },
+        { id: 'confirmation', label: 'Confirmation' },
     ];
 
+    const initialStep = bookingState.currentStep || BookingStep.SEARCH;
+
     const handleStepChange = (currentStep: string, previousStep: string) => {
-        console.log(`Step changed from ${previousStep} to ${currentStep}`);
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        if (currentStep === BookingStep.SEARCH && previousStep !== BookingStep.SEARCH) {
+            dispatch(resetBooking());
+        }
+        dispatch(setCurrentStep(currentStep as BookingStep));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleComplete = () => {
@@ -61,41 +68,41 @@ const BookingPage: React.FC = () => {
                     transition: 'transform 0.3s ease',
                 }}
             >
-                <Box sx={{flexGrow: 1}}>
+                <Box sx={{ flexGrow: 1 }}>
                     <Stepper
                         steps={steps}
-                        initialStep="search"
+                        initialStep={initialStep}
                         onStepChange={handleStepChange}
                         onComplete={handleComplete}
                         showNavigation={true}
                         confirmLabel="Complete Booking"
                     >
                         <StepContent stepId="search">
-                            <FlightSearchStep/>
+                            <FlightSearchStep />
                         </StepContent>
 
                         <StepContent stepId="results">
-                            <FlightResultsStep/>
+                            <FlightResultsStep />
                         </StepContent>
 
                         <StepContent stepId="passenger">
-                            <PassengerStep/>
+                            <PassengerStep />
                         </StepContent>
 
                         <StepContent stepId="seats">
-                            <SeatSelectionStep/>
+                            <SeatSelectionStep />
                         </StepContent>
 
                         <StepContent stepId="extras">
-                            <ExtrasStep/>
+                            <ExtrasStep />
                         </StepContent>
 
                         <StepContent stepId="payment">
-                            <PaymentStep/>
+                            <PaymentStep />
                         </StepContent>
 
                         <StepContent stepId="confirmation">
-                            <ConfirmationStep/>
+                            <ConfirmationStep />
                         </StepContent>
                     </Stepper>
                 </Box>
@@ -110,7 +117,7 @@ const BookingPage: React.FC = () => {
                             flexShrink: 0,
                         }}
                     >
-                        <BookingSummaryBox/>
+                        <BookingSummaryBox />
                     </Box>
                 )}
             </Box>

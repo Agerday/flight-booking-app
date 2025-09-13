@@ -135,7 +135,7 @@ const ExtrasStep: React.FC = () => {
             {/* Global Assistance */}
             <FrostedCard sx={{mb: 4}}>
                 <Typography variant="h5" gutterBottom fontWeight={600}>
-                    🎯 Support Level (All Passengers)
+                    🎯 Support Level
                 </Typography>
 
                 <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>

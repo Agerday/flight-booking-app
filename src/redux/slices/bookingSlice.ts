@@ -55,6 +55,10 @@ const bookingSlice = createSlice({
     name: 'booking',
     initialState,
     reducers: {
+        setCurrentStep: (state, action: PayloadAction<BookingStep>) => {
+            state.currentStep = action.payload;
+        },
+
         setStepValid: (state, action: PayloadAction<{ step: BookingStep; isValid: boolean }>) => {
             state.stepValidation[action.payload.step] = action.payload.isValid;
         },
@@ -69,17 +73,14 @@ const bookingSlice = createSlice({
 
         updateSearchData: (state, action: PayloadAction<Partial<FlightSearchData>>) => {
             state.data.search = { ...state.data.search, ...action.payload };
-            state.stepValidation[BookingStep.RESULTS] = false;
-            state.stepValidation[BookingStep.PASSENGER] = false;
-            state.stepValidation[BookingStep.SEATS] = true;
-            state.stepValidation[BookingStep.EXTRAS] = false;
-            state.stepValidation[BookingStep.PAYMENT] = false;
         },
 
         selectOutboundFlight: (state, action: PayloadAction<Flight>) => {
             state.data.outboundFlight = action.payload;
-            state.data.passengers = [];
-            state.stepValidation[BookingStep.PASSENGER] = false;
+            if (state.data.passengers.length !== state.data.search.passengerCount) {
+                state.data.passengers = [];
+                state.stepValidation[BookingStep.PASSENGER] = false;
+            }
             state.stepValidation[BookingStep.SEATS] = true;
             state.stepValidation[BookingStep.EXTRAS] = false;
             state.stepValidation[BookingStep.PAYMENT] = false;
@@ -153,53 +154,12 @@ const bookingSlice = createSlice({
             state.data.totalPrice = total;
         },
 
-        resetFromStep: (state, action: PayloadAction<BookingStep>) => {
-            const resetStep = action.payload;
-            const stepOrder = Object.values(BookingStep);
-            const stepIndex = stepOrder.indexOf(resetStep);
-
-            stepOrder.forEach((step, index) => {
-                if (index >= stepIndex) {
-                    if (step === BookingStep.SEATS || step === BookingStep.CONFIRMATION) {
-                        state.stepValidation[step as BookingStep] = true;
-                    } else {
-                        state.stepValidation[step as BookingStep] = false;
-                    }
-                }
-            });
-
-            switch (resetStep) {
-                case BookingStep.RESULTS:
-                    state.data.outboundFlight = null;
-                    state.data.returnFlight = null;
-                    state.data.passengers = [];
-                    state.data.assistance = null;
-                    break;
-                case BookingStep.PASSENGER:
-                    state.data.passengers = [];
-                    state.data.assistance = null;
-                    break;
-                case BookingStep.SEATS:
-                    state.data.passengers.forEach(p => {
-                        p.seat = undefined;
-                    });
-                    break;
-                case BookingStep.EXTRAS:
-                    state.data.assistance = null;
-                    state.data.passengers.forEach(p => {
-                        p.extras = undefined;
-                    });
-                    break;
-                case BookingStep.PAYMENT:
-                    break;
-            }
-
-            state.data.totalPrice = 0;
-        },
+        resetBooking: () => initialState,
     },
 });
 
 export const {
+    setCurrentStep,
     setStepValid,
     setLoading,
     setError,
@@ -212,7 +172,7 @@ export const {
     removeSeat,
     updateAssistance,
     calculateTotalPrice,
-    resetFromStep,
+    resetBooking,
 } = bookingSlice.actions;
 
 export default bookingSlice.reducer;

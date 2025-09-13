@@ -65,6 +65,7 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
                 {showNext && (
                     customNextButton || (
                         <Button
+                            id="next-step-btn"
                             variant="contained"
                             onClick={nextStep}
                             disabled={!canGoNext}

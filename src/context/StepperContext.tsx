@@ -1,5 +1,5 @@
-import {createContext, useCallback, useContext, useReducer} from 'react';
-import {StepperContextType, StepperProviderProps, StepperState} from '../types/stepper.types';
+import { createContext, useCallback, useContext, useReducer } from 'react';
+import { StepperContextType, StepperProviderProps, StepperState } from '../types/stepper.types';
 
 type StepperAction =
     | { type: 'GO_TO_STEP'; payload: string }
@@ -35,7 +35,7 @@ const stepperReducer = (state: StepperState, action: StepperAction): StepperStat
                 ...state,
                 steps: state.steps.map(step =>
                     step.id === action.payload
-                        ? {...step, data: undefined}
+                        ? { ...step, data: undefined }
                         : step
                 ),
             };
@@ -88,7 +88,7 @@ export const StepperProvider: React.FC<StepperProviderProps> = ({
 
     const goToStep = useCallback((stepId: string) => {
         const previousStep = state.currentStepId;
-        dispatch({type: 'GO_TO_STEP', payload: stepId});
+        dispatch({ type: 'GO_TO_STEP', payload: stepId });
         onStepChange?.(stepId, previousStep);
     }, [state.currentStepId, onStepChange]);
 
@@ -106,17 +106,19 @@ export const StepperProvider: React.FC<StepperProviderProps> = ({
     const previousStep = useCallback(() => {
         const prevIndex = currentIndex - 1;
         if (prevIndex >= 0 && canGoPrev) {
-            dispatch({type: 'RESET_STEP', payload: state.currentStepId});
+            if (prevIndex === 0) {
+                dispatch({ type: 'RESET_STEP', payload: state.currentStepId });
+            }
             goToStep(state.steps[prevIndex].id);
         }
     }, [currentIndex, state.steps, canGoPrev, goToStep, state.currentStepId]);
 
     const setCanGoNext = useCallback((canGo: boolean) => {
-        dispatch({type: 'SET_CAN_GO_NEXT', payload: canGo});
+        dispatch({ type: 'SET_CAN_GO_NEXT', payload: canGo });
     }, []);
 
     const setValidating = useCallback((validating: boolean) => {
-        dispatch({type: 'SET_VALIDATING', payload: validating});
+        dispatch({ type: 'SET_VALIDATING', payload: validating });
     }, []);
 
     const contextValue: StepperContextType = {
