@@ -24,7 +24,6 @@ const PassengerNavigation: React.FC<PassengerNavigationProps> = ({
     const isFirstPassenger = activeIndex === 0;
     const isLastPassenger = activeIndex === maxIndex - 1;
 
-    // Calculate total completed passengers
     const completedCount = Object.keys(completionStatus).filter(
         key => completionStatus[parseInt(key)]
     ).length;
@@ -53,7 +52,7 @@ const PassengerNavigation: React.FC<PassengerNavigationProps> = ({
                 Previous
             </Button>
 
-            {/* Center Section with Dots/Numbers */}
+            {/* Center Section */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 {/* Quick Navigation Dots */}
                 {onNavigateToIndex && (
