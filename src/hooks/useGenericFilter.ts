@@ -1,11 +1,5 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {
-    FilterGroupConfig,
-    FilterState,
-    FilterValue,
-    isCheckboxFilter,
-    isRangeFilter,
-} from '@/types/filter.types';
+import {FilterGroupConfig, FilterState, FilterValue, isCheckboxFilter, isRangeFilter,} from '@/types/filter.types';
 
 interface UseGenericFilterOptions<T> {
     data: T[];
@@ -58,19 +52,15 @@ export function useGenericFilter<T>({
             return Object.entries(debouncedFilterState).every(([filterId, value]) => {
                 const filterFunction = filterFunctions[filterId];
                 if (!filterFunction) return true;
-
                 if (value === null || value === undefined || value === '') return true;
                 if (Array.isArray(value) && value.length === 0) return true;
-
                 const filter = groups
                     .flatMap(g => g.filters)
                     .find(f => f.id === filterId);
-
                 if (filter && isRangeFilter(filter)) {
                     const [min, max] = value as [number, number];
                     if (min === filter.min && max === filter.max) return true;
                 }
-
                 return filterFunction(item, value);
             });
         });
@@ -79,28 +69,35 @@ export function useGenericFilter<T>({
     const getFilteredCount = useCallback((filterId: string, filterValue: FilterValue): number => {
         const filterFunction = filterFunctions[filterId];
         if (!filterFunction) return 0;
-
         return data.filter(item => filterFunction(item, filterValue)).length;
     }, [data, filterFunctions]);
 
-    const groupsWithCounts = useMemo((): FilterGroupConfig[] => {
+    const groupsWithCounts = useMemo(() => {
         return groups.map(group => ({
             ...group,
             filters: group.filters.map(filter => {
-                if (isCheckboxFilter(filter)) {
+                if (filter.type === "checkbox" || filter.type === "radio" || filter.type === "select") {
                     return {
                         ...filter,
-                        options: filter.options.map(option => ({
-                            ...option,
-                            count: getFilteredCount(filter.id, option.value),
-                            disabled: getFilteredCount(filter.id, option.value) === 0,
-                        })),
+                        options: filter.options.map(option => {
+                            const count = data.filter(item => {
+                                return Object.entries(debouncedFilterState).every(([fid, value]) => {
+                                    const fn = filterFunctions[fid];
+                                    if (!fn) return true;
+                                    if (fid === filter.id) return fn(item, [option.value]); // only this option
+                                    if (value === null || value === undefined || value === '') return true;
+                                    if (Array.isArray(value) && value.length === 0) return true;
+                                    return fn(item, value);
+                                });
+                            }).length;
+                            return {...option, count};
+                        }),
                     };
                 }
                 return filter;
             }),
         }));
-    }, [groups, getFilteredCount]);
+    }, [groups, data, filterFunctions, debouncedFilterState]);
 
     const clearFilters = useCallback(() => {
         setFilterState(initialState);
@@ -117,16 +114,13 @@ export function useGenericFilter<T>({
         return Object.entries(filterState).some(([filterId, value]) => {
             if (Array.isArray(value)) return value.length > 0;
             if (value === null || value === undefined || value === '') return false;
-
             const filter = groups
                 .flatMap(g => g.filters)
                 .find(f => f.id === filterId);
-
             if (filter && isRangeFilter(filter)) {
                 const [min, max] = value as unknown as [number, number];
                 return min !== filter.min || max !== filter.max;
             }
-
             return true;
         });
     }, [filterState, groups]);
@@ -135,16 +129,13 @@ export function useGenericFilter<T>({
         return Object.entries(filterState).reduce((count, [filterId, value]) => {
             if (Array.isArray(value) && value.length > 0) return count + 1;
             if (value === null || value === undefined || value === '') return count;
-
             const filter = groups
                 .flatMap(g => g.filters)
                 .find(f => f.id === filterId);
-
             if (filter && isRangeFilter(filter)) {
                 const [min, max] = value as [number, number];
                 if (min === filter.min && max === filter.max) return count;
             }
-
             return count + 1;
         }, 0);
     }, [filterState, groups]);

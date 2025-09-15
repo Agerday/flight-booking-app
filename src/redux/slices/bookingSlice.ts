@@ -1,4 +1,4 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
     BookingData,
     BookingStep,
@@ -6,7 +6,7 @@ import {
     FlightSearchData,
     GlobalAssistance,
     Passenger,
-    TripType
+    TripType,
 } from "@/types/booking.types";
 
 interface BookingState {
@@ -64,21 +64,24 @@ const bookingSlice = createSlice({
         },
 
         updateSearchData: (state, action: PayloadAction<Partial<FlightSearchData>>) => {
-            state.data.search = {...state.data.search, ...action.payload};
+            state.data.search = { ...state.data.search, ...action.payload };
         },
 
-        selectOutboundFlight: (state, action: PayloadAction<Flight>) => {
+        // Accept Flight | null (Flight already has optional selectedClass / selectedPrice)
+        selectOutboundFlight: (state, action: PayloadAction<Flight | null>) => {
             state.data.outboundFlight = action.payload;
+
             if (state.data.passengers.length !== state.data.search.passengerCount) {
                 state.data.passengers = [];
                 state.stepValidation[BookingStep.PASSENGER] = false;
             }
+
             state.stepValidation[BookingStep.SEATS] = true;
             state.stepValidation[BookingStep.EXTRAS] = false;
             state.stepValidation[BookingStep.PAYMENT] = false;
         },
 
-        selectReturnFlight: (state, action: PayloadAction<Flight>) => {
+        selectReturnFlight: (state, action: PayloadAction<Flight | null>) => {
             state.data.returnFlight = action.payload;
         },
 
@@ -87,24 +90,20 @@ const bookingSlice = createSlice({
         },
 
         updatePassenger: (state, action: PayloadAction<{ index: number; passenger: Partial<Passenger> }>) => {
-            const {index, passenger} = action.payload;
+            const { index, passenger } = action.payload;
             if (state.data.passengers[index]) {
-                state.data.passengers[index] = {...state.data.passengers[index], ...passenger};
+                state.data.passengers[index] = { ...state.data.passengers[index], ...passenger };
             }
         },
 
         assignSeat: (state, action: PayloadAction<{ passengerId: string; seat: Passenger['seat'] }>) => {
             const passenger = state.data.passengers.find(p => p.id === action.payload.passengerId);
-            if (passenger) {
-                passenger.seat = action.payload.seat;
-            }
+            if (passenger) passenger.seat = action.payload.seat;
         },
 
         removeSeat: (state, action: PayloadAction<{ passengerId: string }>) => {
             const passenger = state.data.passengers.find(p => p.id === action.payload.passengerId);
-            if (passenger) {
-                passenger.seat = undefined;
-            }
+            if (passenger) passenger.seat = undefined;
         },
 
         updateAssistance: (state, action: PayloadAction<GlobalAssistance | null>) => {
@@ -122,26 +121,14 @@ const bookingSlice = createSlice({
             }
 
             state.data.passengers.forEach(passenger => {
-                if (passenger.seat?.price) {
-                    total += passenger.seat.price;
-                }
+                if (passenger.seat?.price) total += passenger.seat.price;
+
+                if (passenger.extras?.checkedBaggage?.selected) total += passenger.extras.checkedBaggage.price || 0;
+                if (passenger.extras?.meals?.selected) total += passenger.extras.meals.price || 0;
+                if (passenger.extras?.baggageInsurance?.selected) total += passenger.extras.baggageInsurance.price || 0;
             });
 
-            if (state.data.assistance?.price) {
-                total += state.data.assistance.price;
-            }
-
-            state.data.passengers.forEach(passenger => {
-                if (passenger.extras?.checkedBaggage?.selected && passenger.extras.checkedBaggage.price) {
-                    total += passenger.extras.checkedBaggage.price;
-                }
-                if (passenger.extras?.meals?.selected && passenger.extras.meals.price) {
-                    total += passenger.extras.meals.price;
-                }
-                if (passenger.extras?.baggageInsurance?.selected && passenger.extras.baggageInsurance.price) {
-                    total += passenger.extras.baggageInsurance.price;
-                }
-            });
+            if (state.data.assistance?.price) total += state.data.assistance.price;
 
             state.data.totalPrice = total;
         },
