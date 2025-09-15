@@ -198,26 +198,26 @@ const SeatMap: React.FC<SeatMapProps> = ({
             </Typography>
 
             <Grid container justifyContent="center" alignItems="center" spacing={2}>
-                <Grid>
-                    <Grid container direction="column" spacing={1} alignItems="flex-end">
-                        {visibleRows.map((row) => (
-                            <Grid key={`rowNum-${row}`}>
-                                <Typography
-                                    variant="caption"
-                                    sx={{opacity: 0.6, minWidth: 20}}
-                                >
-                                    {row}
-                                </Typography>
-                            </Grid>
-                        ))}
-                    </Grid>
-                </Grid>
+                <Grid container direction="column" spacing={1} alignItems="center">
+                    {visibleRows.map((row) => (
+                        <Grid
+                            key={`row-${row}`}
+                            container
+                            spacing={1}
+                            justifyContent="center"
+                            alignItems="center"
+                        >
+                            {/* Left seats */}
+                            {leftSeats.map((seat) => renderSeat(row, seat))}
 
-                {renderSeatColumn(leftSeats)}
-                <Grid>
-                    <Box sx={{width: 24}}/>
+                            {/* Aisle */}
+                            <Box sx={{ width: 24 }} />
+
+                            {/* Right seats */}
+                            {rightSeats.map((seat) => renderSeat(row, seat))}
+                        </Grid>
+                    ))}
                 </Grid>
-                {renderSeatColumn(rightSeats)}
             </Grid>
         </Box>
     );

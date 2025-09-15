@@ -233,7 +233,7 @@ const SeatSelectionStep: React.FC = () => {
                                 onClick={handleSkipAll}
                                 fullWidth
                             >
-                                Skip All & Continue
+                                Skip All
                             </Button>
                         </Stack>
                     </Paper>
