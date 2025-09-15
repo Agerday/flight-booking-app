@@ -6,12 +6,11 @@ import RestaurantIcon from "@mui/icons-material/Restaurant";
 import ShieldIcon from "@mui/icons-material/Shield";
 import EventSeatIcon from "@mui/icons-material/EventSeat";
 import AirlineSeatReclineExtraIcon from "@mui/icons-material/AirlineSeatReclineExtra";
-import FlightClassIcon from "@mui/icons-material/FlightClass";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import {useAppDispatch, useAppSelector} from "../../../redux/hooks";
-import {calculateTotalPrice} from "../../../redux/slices/bookingSlice";
-import {ANIMATION_DELAYS, CARD_STYLES, SPACING,} from "../../../types/summary.constants";
+import {useAppDispatch, useAppSelector} from "@/redux/hooks";
+import {calculateTotalPrice} from "@/redux/slices/bookingSlice";
+import {ANIMATION_DELAYS, CARD_STYLES, SPACING,} from "@/types/summary.constants";
 import FlightIcon from "@mui/icons-material/Flight";
 
 interface BookingSummaryBoxProps {
@@ -19,14 +18,14 @@ interface BookingSummaryBoxProps {
 }
 
 const CLASS_ICONS: Record<string, JSX.Element> = {
-    economy: <FlightIcon sx={{ color: "#6c757d" }} fontSize="small" />,
+    economy: <FlightIcon sx={{color: "#6c757d"}} fontSize="small"/>,
     premium: (
-        <AirlineSeatReclineExtraIcon sx={{ color: "#1976d2" }} fontSize="small" />
+        <AirlineSeatReclineExtraIcon sx={{color: "#1976d2"}} fontSize="small"/>
     ),
     business: (
-        <WorkspacePremiumIcon sx={{ color: "#b8860b" }} fontSize="small" />
+        <WorkspacePremiumIcon sx={{color: "#b8860b"}} fontSize="small"/>
     ),
-    first: <EmojiEventsIcon sx={{ color: "#6a1b9a" }} fontSize="small" />,
+    first: <EmojiEventsIcon sx={{color: "#6a1b9a"}} fontSize="small"/>,
 };
 
 const EXTRA_ICONS = {
@@ -40,9 +39,9 @@ const EXTRA_ICONS = {
 const formatClass = (className?: string) =>
     className ? className.charAt(0).toUpperCase() + className.slice(1) : "";
 
-const BookingSummaryBox: React.FC<BookingSummaryBoxProps> = ({
-                                                                 title = "Booking Summary",
-                                                             }) => {
+const BookingSummary: React.FC<BookingSummaryBoxProps> = ({
+                                                              title = "Booking Summary",
+                                                          }) => {
     const dispatch = useAppDispatch();
     const {data} = useAppSelector((state) => state.booking);
 
@@ -241,4 +240,4 @@ const BookingSummaryBox: React.FC<BookingSummaryBoxProps> = ({
     );
 };
 
-export default BookingSummaryBox;
+export default BookingSummary;

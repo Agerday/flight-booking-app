@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {
     BookingData,
     BookingStep,
@@ -7,7 +7,7 @@ import {
     GlobalAssistance,
     Passenger,
     TripType
-} from '../../types';
+} from "@/types/booking.types";
 
 interface BookingState {
     currentStep: BookingStep;
@@ -63,16 +63,8 @@ const bookingSlice = createSlice({
             state.stepValidation[action.payload.step] = action.payload.isValid;
         },
 
-        setLoading: (state, action: PayloadAction<boolean>) => {
-            state.isLoading = action.payload;
-        },
-
-        setError: (state, action: PayloadAction<string | null>) => {
-            state.error = action.payload;
-        },
-
         updateSearchData: (state, action: PayloadAction<Partial<FlightSearchData>>) => {
-            state.data.search = { ...state.data.search, ...action.payload };
+            state.data.search = {...state.data.search, ...action.payload};
         },
 
         selectOutboundFlight: (state, action: PayloadAction<Flight>) => {
@@ -95,9 +87,9 @@ const bookingSlice = createSlice({
         },
 
         updatePassenger: (state, action: PayloadAction<{ index: number; passenger: Partial<Passenger> }>) => {
-            const { index, passenger } = action.payload;
+            const {index, passenger} = action.payload;
             if (state.data.passengers[index]) {
-                state.data.passengers[index] = { ...state.data.passengers[index], ...passenger };
+                state.data.passengers[index] = {...state.data.passengers[index], ...passenger};
             }
         },
 
@@ -161,8 +153,6 @@ const bookingSlice = createSlice({
 export const {
     setCurrentStep,
     setStepValid,
-    setLoading,
-    setError,
     updateSearchData,
     selectOutboundFlight,
     selectReturnFlight,

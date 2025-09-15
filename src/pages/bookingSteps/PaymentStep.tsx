@@ -1,11 +1,10 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Alert, Box, CircularProgress, Grid, Typography} from '@mui/material';
 
-import {useAppDispatch, useAppSelector} from '../../redux/hooks';
-import {calculateTotalPrice, setStepValid} from '../../redux/slices/bookingSlice';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {calculateTotalPrice, setStepValid} from '@/redux/slices/bookingSlice';
 import {useStepper} from '../../hooks/useStepper';
-import {BookingStep} from '../../types';
-import {type PaymentFormData} from '../../schemas/paymentSchema';
+import {BookingStep} from '@/types/booking.types';
 
 import PaymentPage from '../PaymentPage/PaymentPage';
 
@@ -41,7 +40,7 @@ const PaymentStep: React.FC = () => {
         dispatch(setStepValid({step: BookingStep.PAYMENT, isValid: canProceed}));
     }, [isValidPayment, paymentState.isProcessing, setCanGoNext, dispatch]);
 
-    const handlePaymentSubmit = useCallback(async (paymentData: PaymentFormData) => {
+    const handlePaymentSubmit = useCallback(async () => {
         if (!isValidPayment) return;
 
         setPaymentState(prev => ({...prev, isProcessing: true, error: null}));

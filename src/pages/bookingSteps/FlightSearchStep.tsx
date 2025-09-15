@@ -17,13 +17,13 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import {isSameDay} from "date-fns";
 import {zodResolver} from "@hookform/resolvers/zod";
 
-import {useAppDispatch, useAppSelector} from "../../redux/hooks";
-import {setStepValid, updateSearchData} from "../../redux/slices/bookingSlice";
-import {FlightSearchFormData, flightSearchSchema} from "../../schemas/flightSearchSchema";
-import {getAvailableDepartureDates, getFilteredLocations} from "../../utils/flightSearch.utils";
-import {FormInput} from "../../components/ui/FormInput/FormInput";
-import {mockFlights} from "../../data/mockFlights";
-import {BookingStep, TripType} from "../../types";
+import {useAppDispatch, useAppSelector} from "@/redux/hooks";
+import {setStepValid, updateSearchData} from "@/redux/slices/bookingSlice";
+import {FlightSearchFormData, flightSearchSchema} from "@/schemas/flightSearchSchema";
+import {getAvailableDepartureDates, getFilteredLocations} from "@/utils/flightSearch.utils";
+import {FormInput} from "@/components/ui/FormInput/FormInput";
+import {mockFlights} from "@/data/mockFlights";
+import {BookingStep, TripType} from "@/types/booking.types";
 import {useStepper} from "../../hooks/useStepper";
 
 const FlightSearchStep: React.FC = () => {

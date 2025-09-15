@@ -2,11 +2,11 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {Alert, Box, Button, Card, CardContent, Chip, Divider, Paper, Stack, Typography,} from '@mui/material';
 import {Check, FlashOn, Luggage, Restaurant, Security,} from '@mui/icons-material';
 
-import {useAppDispatch, useAppSelector} from '../../redux/hooks';
-import {calculateTotalPrice, setStepValid, updateAssistance, updatePassenger} from '../../redux/slices/bookingSlice';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {calculateTotalPrice, setStepValid, updateAssistance, updatePassenger} from '@/redux/slices/bookingSlice';
 import {useStepper} from '../../hooks/useStepper';
-import {BookingStep, GlobalAssistance, PassengerExtras} from '../../types';
-import {assistanceTiers, extrasPricing} from '../../types/constants';
+import {BookingStep, GlobalAssistance, PassengerExtras} from '@/types/booking.types';
+import {assistanceTiers, extrasPricing} from '@/types/constants';
 
 import FrostedCard from '../../components/layout/FrostedCard/FrostedCard';
 import PassengerNavigation from '../../components/booking/PassengerNavigation/PassengerNavigation';

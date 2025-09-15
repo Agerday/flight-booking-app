@@ -1,5 +1,5 @@
 import {isSameDay} from 'date-fns';
-import {Flight, LocationOption} from "../types";
+import {Flight, LocationOption} from "@/types/booking.types";
 
 export const getFilteredLocations = (
     flights: Flight[],

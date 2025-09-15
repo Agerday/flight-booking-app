@@ -1,10 +1,10 @@
 import React, {useMemo} from 'react';
 import {Box} from '@mui/material';
-import {useAppDispatch, useAppSelector} from '../../redux/hooks';
-import {StepContent} from '../../components/stepper/StepContent';
-import BookingSummaryBox from '../../components/booking/Summary/BookingSummary';
-import {Step} from '../../types/stepper.types';
-import Stepper from '../../components/stepper/Stepper';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {StepContent} from '@/components/ui/Stepper/StepContent';
+import BookingSummary from '../../components/booking/Summary/BookingSummary';
+import {Step} from '@/types/stepper.types';
+import Stepper from '../../components/ui/Stepper/Stepper';
 import FlightSearchStep from '../bookingSteps/FlightSearchStep';
 import FlightResultsStep from '../bookingSteps/FlightResultsStep';
 import PassengerStep from '../bookingSteps/PassengerStep';
@@ -12,8 +12,8 @@ import SeatSelectionStep from '../bookingSteps/SeatSelectionStep';
 import ExtrasStep from '../bookingSteps/ExtrasStep';
 import PaymentStep from '../bookingSteps/PaymentStep';
 import ConfirmationStep from '../bookingSteps/ConfirmationStep';
-import {resetBooking, setCurrentStep} from '../../redux/slices/bookingSlice';
-import {BookingStep} from '../../types';
+import {resetBooking, setCurrentStep} from '@/redux/slices/bookingSlice';
+import {BookingStep} from "@/types/booking.types";
 
 const BookingPage: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -23,13 +23,13 @@ const BookingPage: React.FC = () => {
     const showFilterSidebar = bookingState.currentStep === BookingStep.RESULTS;
 
     const steps: Step[] = useMemo(() => [
-        { id: 'search', label: 'Search Flights' },
-        { id: 'results', label: 'Select Flight' },
-        { id: 'passenger', label: 'Passenger Details' },
-        { id: 'seats', label: 'Choose Seats' },
-        { id: 'extras', label: 'Add Extras' },
-        { id: 'payment', label: 'Payment' },
-        { id: 'confirmation', label: 'Confirmation' },
+        {id: 'search', label: 'Search Flights'},
+        {id: 'results', label: 'Select Flight'},
+        {id: 'passenger', label: 'Passenger Details'},
+        {id: 'seats', label: 'Choose Seats'},
+        {id: 'extras', label: 'Add Extras'},
+        {id: 'payment', label: 'Payment'},
+        {id: 'confirmation', label: 'Confirmation'},
     ], []);
 
     const initialStep = bookingState.currentStep || BookingStep.SEARCH;
@@ -39,19 +39,11 @@ const BookingPage: React.FC = () => {
             dispatch(resetBooking());
         }
         dispatch(setCurrentStep(currentStep as BookingStep));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({top: 0, behavior: 'smooth'});
     };
 
     const handleComplete = () => {
         console.log('Booking completed!');
-    };
-
-    const getContainerTransform = () => {
-        const leftOffset = showFilterSidebar ? 150 : 0;
-        const rightOffset = hasSummary ? 125 : 0;
-        const netOffset = rightOffset - leftOffset;
-
-        return netOffset !== 0 ? `translateX(${netOffset}px)` : 'none';
     };
 
     return (
@@ -64,46 +56,31 @@ const BookingPage: React.FC = () => {
                 p: 3,
                 display: 'flex',
                 justifyContent: 'center',
-                position: 'relative',
             }}
         >
             <Box
                 sx={{
                     display: 'flex',
                     alignItems: 'flex-start',
-                    justifyContent: 'center',
+                    justifyContent: 'space-between',
                     width: '100%',
                     maxWidth: 1400,
                     gap: 3,
-                    position: 'relative',
                 }}
             >
                 {/* Filter Sidebar */}
-                {showFilterSidebar && (
-                    <Box
-                        sx={{
-                            width: 280,
-                            minWidth: 280,
-                            position: 'sticky',
-                            top: 5,
-                            flexShrink: 0,
-                            opacity: 0,
-                            animation: 'slideInFromLeft 0.3s ease forwards',
-                            '@keyframes slideInFromLeft': {
-                                from: {
-                                    opacity: 0,
-                                    transform: 'translateX(-20px)',
-                                },
-                                to: {
-                                    opacity: 1,
-                                    transform: 'translateX(0)',
-                                },
-                            },
-                        }}
-                    >
-                        <div id="flight-filter-portal" />
-                    </Box>
-                )}
+                <Box
+                    sx={{
+                        width: 280,
+                        minWidth: 280,
+                        visibility: showFilterSidebar ? "visible" : "hidden",
+                        position: 'sticky',
+                        top: 50,
+                        flexShrink: 0,
+                    }}
+                >
+                    {showFilterSidebar && <div id="flight-filter-portal" />}
+                </Box>
 
                 {/* Main Stepper Content */}
                 <Box
@@ -111,8 +88,7 @@ const BookingPage: React.FC = () => {
                         flexGrow: 1,
                         maxWidth: 900,
                         width: '100%',
-                        transform: getContainerTransform(),
-                        transition: 'transform 0.3s ease',
+                        transition: 'all 0.3s ease',
                     }}
                 >
                     <Stepper
@@ -124,61 +100,48 @@ const BookingPage: React.FC = () => {
                         confirmLabel="Complete Booking"
                     >
                         <StepContent stepId="search">
-                            <FlightSearchStep />
+                            <FlightSearchStep/>
                         </StepContent>
 
                         <StepContent stepId="results">
-                            <FlightResultsStep showFilterInSidebar={showFilterSidebar} />
+                            <FlightResultsStep showFilterInSidebar={showFilterSidebar}/>
                         </StepContent>
 
                         <StepContent stepId="passenger">
-                            <PassengerStep />
+                            <PassengerStep/>
                         </StepContent>
 
                         <StepContent stepId="seats">
-                            <SeatSelectionStep />
+                            <SeatSelectionStep/>
                         </StepContent>
 
                         <StepContent stepId="extras">
-                            <ExtrasStep />
+                            <ExtrasStep/>
                         </StepContent>
 
                         <StepContent stepId="payment">
-                            <PaymentStep />
+                            <PaymentStep/>
                         </StepContent>
 
                         <StepContent stepId="confirmation">
-                            <ConfirmationStep />
+                            <ConfirmationStep/>
                         </StepContent>
                     </Stepper>
                 </Box>
 
                 {/* Summary Sidebar */}
-                {hasSummary && (
-                    <Box
-                        sx={{
-                            width: 250,
-                            minWidth: 250,
-                            position: 'sticky',
-                            top: 5,
-                            flexShrink: 0,
-                            opacity: 0,
-                            animation: 'slideInFromRight 0.3s ease forwards',
-                            '@keyframes slideInFromRight': {
-                                from: {
-                                    opacity: 0,
-                                    transform: 'translateX(20px)',
-                                },
-                                to: {
-                                    opacity: 1,
-                                    transform: 'translateX(0)',
-                                },
-                            },
-                        }}
-                    >
-                        <BookingSummaryBox />
-                    </Box>
-                )}
+                <Box
+                    sx={{
+                        width: 250,
+                        minWidth: 250,
+                        visibility: hasSummary ? "visible" : "hidden",
+                        position: 'sticky',
+                        top: 30,
+                        flexShrink: 0,
+                    }}
+                >
+                    {hasSummary && <BookingSummary/>}
+                </Box>
             </Box>
         </Box>
     );

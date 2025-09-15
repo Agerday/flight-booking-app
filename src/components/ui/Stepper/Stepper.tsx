@@ -1,8 +1,8 @@
 import {Box} from '@mui/material';
 import {StepperNavigation} from './StepperNavigation';
-import {StepperProviderProps} from "../../types/stepper.types";
-import {StepperProvider} from "../../context/StepperContext";
-import CenteredPageLayout from '../layout/CenteredPageLayout/CenteredPageLayout';
+import {StepperProviderProps} from "../../../types/stepper.types";
+import {StepperProvider} from "../../../context/StepperContext";
+import CenteredPageLayout from '../../layout/CenteredPageLayout/CenteredPageLayout';
 
 interface StepperProps extends Omit<StepperProviderProps, 'children'> {
     children: React.ReactNode;

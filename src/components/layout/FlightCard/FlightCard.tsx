@@ -3,8 +3,8 @@ import {Box, Button, Card, CardContent, Chip, Divider, Grid, Paper, Stack, Typog
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import FlightLandIcon from '@mui/icons-material/FlightLand';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import {Flight, FlightClass} from "../../../types";
-import {flightClassThemes} from "../../../types/constants";
+import {flightClassThemes} from "@/types/constants";
+import {Flight, FlightClass} from "@/types/booking.types";
 
 interface FlightCardProps {
     flight: Flight;

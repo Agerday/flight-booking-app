@@ -3,20 +3,20 @@ import {Alert, Box, Chip, Divider, Grid, Typography} from '@mui/material';
 import {FormProvider, useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 
-import {useAppDispatch, useAppSelector} from '../../redux/hooks';
-import {setStepValid, updatePassengers} from '../../redux/slices/bookingSlice';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {setStepValid, updatePassengers} from '@/redux/slices/bookingSlice';
 import {useStepper} from '../../hooks/useStepper';
-import {BookingStep, Passenger} from '../../types';
-import {genderOptions} from '../../types/constants';
-import {PassengersFormData, passengersFormSchema} from '../../schemas/passengersSchema';
+import {genderOptions} from '@/types/constants';
+import {PassengersFormData, passengersFormSchema} from '@/schemas/passengersSchema';
 
 import FrostedCard from '../../components/layout/FrostedCard/FrostedCard';
 import PassportScanner from '../../components/booking/PassportScanner/PassportScanner';
 import FormInput from '../../components/ui/FormInput/FormInput';
 import DatepickerInput from '../../components/ui/DatepickerInput/DatepickerInput';
 import PassengerNavigation from '../../components/booking/PassengerNavigation/PassengerNavigation';
-import {createEmptyPassenger} from '../../utils/passenger.utils';
+import {createEmptyPassenger} from '@/utils/passenger.utils';
 import {CheckCircle} from '@mui/icons-material';
+import {BookingStep, Passenger} from "@/types/booking.types";
 
 interface AutoFilledFields {
     [fieldPath: string]: boolean;

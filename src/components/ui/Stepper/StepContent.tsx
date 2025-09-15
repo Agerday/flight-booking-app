@@ -1,4 +1,4 @@
-import {useStepper} from "../../hooks/useStepper";
+import {useStepper} from "../../../hooks/useStepper";
 
 interface StepContentProps {
     stepId: string;

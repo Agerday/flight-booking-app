@@ -13,9 +13,9 @@ import {
 import {QRCodeSVG as QRCode} from 'qrcode.react';
 import {format} from 'date-fns';
 
-import {useAppSelector} from '../../redux/hooks';
+import {useAppSelector} from '@/redux/hooks';
 import {useStepper} from '../../hooks/useStepper';
-import {Flight as FlightType, Passenger, TripType} from '../../types';
+import {Flight as FlightType, Passenger, TripType} from '@/types/booking.types';
 import FrostedCard from '../../components/layout/FrostedCard/FrostedCard';
 
 interface BoardingPassData {
@@ -227,7 +227,6 @@ const ConfirmationStep: React.FC = () => {
                         value={JSON.stringify(qrData)}
                         size={80}
                         level="M"
-                        includeMargin
                     />
                 </Box>
 

@@ -1,278 +1,187 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { Flight } from '@/types/booking.types';
+import { FilterBuilder, FilterGroupConfig } from '@/types/filter.types';
+import GenericFilter from '@/components/ui/GenericFilter/GenericFilter';
+import { useFilterFunctions, useGenericFilter } from '@/hooks/useGenericFilter';
 import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-    Box,
-    Button,
-    Checkbox,
-    Chip,
-    Divider,
-    FormControlLabel,
-    FormGroup,
-    Paper,
-    Slider,
-    Typography,
-} from '@mui/material';
-import {
-    Airlines as AirlinesIcon,
     AttachMoney as MoneyIcon,
-    Clear as ClearIcon,
-    ExpandMore as ExpandMoreIcon,
-    FilterList as FilterListIcon,
     Flight as FlightIcon,
+    Airlines as AirlinesIcon,
+    Schedule as TimeIcon,
 } from '@mui/icons-material';
-import {FlightFilterProps} from '../../../types/filter.types';
-import {useFlightFilters} from '../../../hooks/useFlightFilters';
+
+interface FlightFilterProps {
+    flights: Flight[];
+    variant?: 'inline' | 'sidebar' | 'modal' | 'drawer';
+    onFilteredFlightsChange?: (flights: Flight[]) => void;
+}
 
 const FlightFilter: React.FC<FlightFilterProps> = ({
                                                        flights,
-                                                       filters,
-                                                       onFiltersChange,
                                                        variant = 'inline',
+                                                       onFilteredFlightsChange,
                                                    }) => {
-    const isSidebar = variant === 'sidebar';
+    const { createRangeFilter, createMultiSelectFilter } = useFilterFunctions<Flight>();
+
+    const filterOptions = useMemo(() => {
+        const airlines = new Set<string>();
+        const stops = new Set<number>();
+        let minPrice = Infinity;
+        let maxPrice = 0;
+
+        flights.forEach(flight => {
+            airlines.add(flight.airline);
+            stops.add(flight.stops);
+
+            const prices = Object.values(flight.prices);
+            const flightMin = Math.min(...prices);
+            const flightMax = Math.max(...prices);
+
+            minPrice = Math.min(minPrice, flightMin);
+            maxPrice = Math.max(maxPrice, flightMax);
+        });
+
+        return {
+            airlines: Array.from(airlines).sort(),
+            stops: Array.from(stops).sort((a, b) => a - b),
+            priceRange: {
+                min: minPrice === Infinity ? 0 : minPrice,
+                max: maxPrice === 0 ? 1000 : maxPrice,
+            },
+        };
+    }, [flights]);
+
+    const groups = useMemo((): FilterGroupConfig[] => {
+        const getStopsLabel = (stops: number) => {
+            return stops === 0 ? 'Direct' : `${stops} Stop${stops > 1 ? 's' : ''}`;
+        };
+
+        return [
+            {
+                id: 'price',
+                label: 'Price',
+                icon: <MoneyIcon fontSize="small" color="primary" />,
+                filters: [
+                    FilterBuilder.range(
+                        'priceRange',
+                        'Price Range',
+                        filterOptions.priceRange.min,
+                        filterOptions.priceRange.max,
+                        {
+                            step: 10,
+                            formatValue: (value) => `€${value}`,
+                            icon: <MoneyIcon fontSize="small" />,
+                        }
+                    ),
+                ],
+                defaultExpanded: true,
+            },
+            {
+                id: 'stops',
+                label: 'Stops',
+                icon: <FlightIcon fontSize="small" color="primary" />,
+                filters: [
+                    FilterBuilder.checkbox(
+                        'stops',
+                        'Number of Stops',
+                        filterOptions.stops.map(stop => ({
+                            value: stop,
+                            label: getStopsLabel(stop),
+                        }))
+                    ),
+                ],
+                defaultExpanded: true,
+            },
+            {
+                id: 'airlines',
+                label: 'Airlines',
+                icon: <AirlinesIcon fontSize="small" color="primary" />,
+                filters: [
+                    FilterBuilder.checkbox(
+                        'airlines',
+                        'Select Airlines',
+                        filterOptions.airlines.map(airline => ({
+                            value: airline,
+                            label: airline,
+                        }))
+                    ),
+                ],
+                defaultExpanded: true,
+            },
+            {
+                id: 'time',
+                label: 'Departure Time',
+                icon: <TimeIcon fontSize="small" color="primary" />,
+                filters: [
+                    FilterBuilder.checkbox(
+                        'timeOfDay',
+                        'Time of Day',
+                        [
+                            { value: 'morning', label: 'Morning (6AM - 12PM)' },
+                            { value: 'afternoon', label: 'Afternoon (12PM - 6PM)' },
+                            { value: 'evening', label: 'Evening (6PM - 12AM)' },
+                            { value: 'night', label: 'Night (12AM - 6AM)' },
+                        ]
+                    ),
+                ],
+                defaultExpanded: variant === 'sidebar',
+            },
+        ];
+    }, [filterOptions, variant]);
+
+    const filterFunctions = useMemo(() => {
+        const getTimeOfDay = (dateString: string): string => {
+            const date = new Date(dateString);
+            const hour = date.getHours();
+
+            if (hour >= 6 && hour < 12) return 'morning';
+            if (hour >= 12 && hour < 18) return 'afternoon';
+            if (hour >= 18 && hour < 24) return 'evening';
+            return 'night';
+        };
+
+        return {
+            priceRange: createRangeFilter((flight) => {
+                return Math.min(...Object.values(flight.prices));
+            }),
+            airlines: createMultiSelectFilter((flight) => flight.airline),
+            stops: createMultiSelectFilter((flight) => flight.stops),
+            timeOfDay: createMultiSelectFilter((flight) => getTimeOfDay(flight.departureTime)),
+        };
+    }, [createRangeFilter, createMultiSelectFilter]);
 
     const {
-        filterOptions,
-        hasActiveFilters,
-        getFilteredCount,
-    } = useFlightFilters({flights});
+        filterState,
+        setFilterState,
+        filteredData,
+        groupsWithCounts,
+        clearFilters,
+    } = useGenericFilter({
+        data: flights,
+        groups,
+        filterFunctions,
+        debounceMs: 200,
+    });
 
-    const handlePriceChange = (_: Event, newValue: number | number[]) => {
-        onFiltersChange({
-            ...filters,
-            priceRange: newValue as [number, number],
-        });
-    };
-
-    const handleFilterToggle = (
-        type: 'airlines' | 'stops',
-        value: string | number
-    ) => {
-        if (type === 'airlines') {
-            const currentValues = filters.airlines;
-            const updated = currentValues.includes(value as string)
-                ? currentValues.filter((v) => v !== value)
-                : [...currentValues, value as string];
-
-            onFiltersChange({
-                ...filters,
-                airlines: updated,
-            });
+    React.useEffect(() => {
+        if (onFilteredFlightsChange) {
+            onFilteredFlightsChange(filteredData);
         }
-
-        if (type === 'stops') {
-            const currentValues = filters.stops;
-            const updated = currentValues.includes(value as number)
-                ? currentValues.filter((v) => v !== value)
-                : [...currentValues, value as number];
-
-            onFiltersChange({
-                ...filters,
-                stops: updated,
-            });
-        }
-    };
-
-    const handleClearFilters = () => {
-        onFiltersChange({
-            priceRange: filterOptions.priceRange,
-            airlines: [],
-            stops: [],
-            timeOfDay: [],
-        });
-    };
-
-    const getStopsLabel = (stops: number) => {
-        return stops === 0 ? 'Direct' : `${stops} Stop${stops > 1 ? 's' : ''}`;
-    };
-
-    const containerSx = isSidebar ? {
-        p: 3,
-        bgcolor: 'background.paper',
-        borderRadius: 2,
-        backdropFilter: 'blur(10px)',
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    } : {mb: 3};
-
-    const Container: React.ElementType = isSidebar ? Paper : Box;
+    }, [filteredData, onFilteredFlightsChange]);
 
     return (
-        <Container elevation={isSidebar ? 3 : 0} sx={containerSx}>
-            {/* Header */}
-            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
-                <Typography variant="h6" sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                    <FilterListIcon/>
-                    Filters
-                </Typography>
-                {hasActiveFilters && (
-                    <Button
-                        size="small"
-                        startIcon={<ClearIcon/>}
-                        onClick={handleClearFilters}
-                        sx={{textTransform: 'none'}}
-                    >
-                        Clear
-                    </Button>
-                )}
-            </Box>
-
-            <Divider sx={{mb: 2}}/>
-
-            {/* Price Range */}
-            <FilterSection
-                title="Price Range"
-                icon={<MoneyIcon fontSize="small" color="primary"/>}
-                defaultExpanded={isSidebar}
-            >
-                <Box sx={{px: 1}}>
-                    <Slider
-                        value={filters.priceRange}
-                        onChange={handlePriceChange}
-                        valueLabelDisplay="auto"
-                        valueLabelFormat={(value) => `€${value}`}
-                        min={filterOptions.priceRange[0]}
-                        max={filterOptions.priceRange[1]}
-                    />
-                    <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
-                        <Typography variant="caption" color="text.secondary">
-                            €{filters.priceRange[0]}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                            €{filters.priceRange[1]}
-                        </Typography>
-                    </Box>
-                </Box>
-            </FilterSection>
-
-            {/* Stops */}
-            <FilterSection
-                title="Stops"
-                icon={<FlightIcon fontSize="small" color="primary"/>}
-                defaultExpanded={isSidebar}
-            >
-                <FilterCheckboxGroup
-                    options={filterOptions.stops}
-                    selected={filters.stops}
-                    getLabel={getStopsLabel}
-                    getCount={(value) => getFilteredCount('stops', value)}
-                    onChange={(value) => handleFilterToggle('stops', value)}
-                />
-            </FilterSection>
-
-            {/* Airlines */}
-            <FilterSection
-                title="Airlines"
-                icon={<AirlinesIcon fontSize="small" color="primary"/>}
-                defaultExpanded={isSidebar}
-            >
-                <FilterCheckboxGroup
-                    options={filterOptions.airlines}
-                    selected={filters.airlines}
-                    getLabel={(value) => String(value)}
-                    getCount={(value) => getFilteredCount('airline', value)}
-                    onChange={(value) => handleFilterToggle('airlines', value)}
-                />
-            </FilterSection>
-        </Container>
+        <GenericFilter
+            groups={groupsWithCounts}
+            state={filterState}
+            onChange={setFilterState}
+            variant={variant}
+            showClearButton={true}
+            showResultCount={true}
+            resultCount={filteredData.length}
+            onClear={clearFilters}
+            dense={variant === 'sidebar'}
+        />
     );
 };
-
-// Reusable Filter Section Component
-interface FilterSectionProps {
-    title: string;
-    icon: React.ReactNode;
-    defaultExpanded: boolean;
-    children: React.ReactNode;
-}
-
-const FilterSection: React.FC<FilterSectionProps> = ({title, icon, defaultExpanded, children}) => (
-    <Accordion
-        defaultExpanded={defaultExpanded}
-        sx={{
-            boxShadow: 'none',
-            '&:before': {display: 'none'},
-            backgroundColor: 'transparent',
-        }}
-    >
-        <AccordionSummary expandIcon={<ExpandMoreIcon/>} sx={{px: 0}}>
-            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                {icon}
-                <Typography fontWeight={500}>{title}</Typography>
-            </Box>
-        </AccordionSummary>
-        <AccordionDetails sx={{px: 0}}>
-            {children}
-        </AccordionDetails>
-    </Accordion>
-);
-
-// Reusable Checkbox Group Component
-interface FilterCheckboxGroupProps<T> {
-    options: T[];
-    selected: T[];
-    getLabel: (value: T) => string;
-    getCount: (value: T) => number;
-    onChange: (value: T) => void;
-}
-
-function FilterCheckboxGroup<T extends string | number>({
-                                                            options,
-                                                            selected,
-                                                            getLabel,
-                                                            getCount,
-                                                            onChange,
-                                                        }: FilterCheckboxGroupProps<T>) {
-    return (
-        <FormGroup>
-            {options.map(option => {
-                const count = getCount(option);
-                const isDisabled = count === 0;
-
-                return (
-                    <FormControlLabel
-                        key={String(option)}
-                        control={
-                            <Checkbox
-                                checked={selected.includes(option)}
-                                onChange={() => onChange(option)}
-                                size="small"
-                                disabled={isDisabled}
-                            />
-                        }
-                        label={
-                            <Box sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                width: '100%',
-                                opacity: isDisabled ? 0.5 : 1,
-                            }}>
-                                <Typography variant="body2">
-                                    {getLabel(option)}
-                                </Typography>
-                                <Chip
-                                    label={count}
-                                    size="small"
-                                    variant="outlined"
-                                    sx={{height: 20, minWidth: 28}}
-                                />
-                            </Box>
-                        }
-                        sx={{
-                            width: '100%',
-                            mr: 0,
-                            '& .MuiFormControlLabel-label': {
-                                flexGrow: 1,
-                                ml: 1,
-                            }
-                        }}
-                    />
-                );
-            })}
-        </FormGroup>
-    );
-}
 
 export default FlightFilter;

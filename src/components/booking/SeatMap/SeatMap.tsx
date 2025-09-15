@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Box, Fade, Grid, Paper, Slide, Stack, Tooltip, Typography} from '@mui/material';
-import {FlightClass, Seat} from '../../../types';
+import {FlightClass, Seat} from "@/types/booking.types";
 
 interface SeatMapProps {
     onSeatSelect: (seat: Seat) => void;

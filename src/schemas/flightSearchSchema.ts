@@ -1,8 +1,8 @@
 import {z} from 'zod';
-import {TripType} from '../types';
-import {mockFlights} from '../data/mockFlights';
-import {getAvailableDepartureDates} from '../utils/flightSearch.utils';
+import {mockFlights} from '@/data/mockFlights';
+import {getAvailableDepartureDates} from '@/utils/flightSearch.utils';
 import {isSameDay} from 'date-fns';
+import {TripType} from "@/types/booking.types";
 
 export const flightSearchSchema = z.object({
     origin: z.string().min(1, 'Please select departure city'),

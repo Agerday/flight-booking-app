@@ -1,6 +1,6 @@
 import {Box, Button, CircularProgress} from '@mui/material';
 import {ArrowBack, ArrowForward, CheckCircle} from '@mui/icons-material';
-import {useStepper} from "../../hooks/useStepper";
+import {useStepper} from "../../../hooks/useStepper";
 
 interface StepperNavigationProps {
     nextLabel?: string;

@@ -4,7 +4,7 @@ import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import FlightLandIcon from "@mui/icons-material/FlightLand";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
-import {Flight, FlightSearchData} from "../../../types";
+import {Flight, FlightSearchData} from "@/types/booking.types";
 
 interface Props {
     outboundFlight: Flight | null;

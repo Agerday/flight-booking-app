@@ -1,4 +1,4 @@
-import {Flight} from "../types";
+import {Flight} from "@/types/booking.types";
 
 const airlines = ["ReactJet", "JS Airlines", "Air React", "Vue Airways", "Angular Express"];
 const cities = ["Berlin", "Paris", "Rome", "Madrid", "London", "Amsterdam"];
@@ -6,7 +6,7 @@ const cities = ["Berlin", "Paris", "Rome", "Madrid", "London", "Amsterdam"];
 const generateDates = (): Date[] => {
     const dates: Date[] = [];
     const today = new Date();
-    for (let i = 0; i < 30; i++) { // Extended to 30 days
+    for (let i = 0; i < 30; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() + i);
         dates.push(date);
