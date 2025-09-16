@@ -1,8 +1,9 @@
 import {Box} from '@mui/material';
 import {StepperNavigation} from './StepperNavigation';
-import {StepperProviderProps} from "../../../types/stepper.types";
-import {StepperProvider} from "../../../context/StepperContext";
+import {StepperProviderProps} from "@/types/stepper.types";
+import {StepperProvider} from "@/context/StepperContext";
 import CenteredPageLayout from '../../layout/CenteredPageLayout/CenteredPageLayout';
+import React from "react";
 
 interface StepperProps extends Omit<StepperProviderProps, 'children'> {
     children: React.ReactNode;
@@ -13,6 +14,7 @@ interface StepperProps extends Omit<StepperProviderProps, 'children'> {
     customNextButton?: React.ReactNode;
     customPreviousButton?: React.ReactNode;
     customConfirmButton?: React.ReactNode;
+    hideNextButton?: boolean;
 }
 
 const Stepper: React.FC<StepperProps> = ({
@@ -24,6 +26,7 @@ const Stepper: React.FC<StepperProps> = ({
                                              customNextButton,
                                              customPreviousButton,
                                              customConfirmButton,
+                                             hideNextButton,
                                              ...providerProps
                                          }) => {
     return (
@@ -41,6 +44,7 @@ const Stepper: React.FC<StepperProps> = ({
                         customNextButton={customNextButton}
                         customPreviousButton={customPreviousButton}
                         customConfirmButton={customConfirmButton}
+                        hideNextButton={hideNextButton}
                     />
                 )}
             </CenteredPageLayout>

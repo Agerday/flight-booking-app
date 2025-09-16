@@ -79,7 +79,7 @@ const BookingPage: React.FC = () => {
                         flexShrink: 0,
                     }}
                 >
-                    {showFilterSidebar && <div id="flight-filter-portal" />}
+                    {showFilterSidebar && <div id="flight-filter-portal"/>}
                 </Box>
 
                 {/* Main Stepper Content */}
@@ -98,6 +98,8 @@ const BookingPage: React.FC = () => {
                         onComplete={handleComplete}
                         showNavigation={true}
                         confirmLabel="Complete Booking"
+                        hideNextButton={bookingState.currentStep === BookingStep.PAYMENT
+                            || bookingState.currentStep === BookingStep.CONFIRMATION}
                     >
                         <StepContent stepId="search">
                             <FlightSearchStep/>

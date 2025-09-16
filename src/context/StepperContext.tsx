@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useReducer } from 'react';
-import { StepperContextType, StepperProviderProps, StepperState } from '../types/stepper.types';
+import React, { createContext, useCallback, useContext, useReducer } from 'react';
+import { StepperContextType, StepperProviderProps, StepperState } from '@/types/stepper.types';
 
 type StepperAction =
     | { type: 'GO_TO_STEP'; payload: string }
@@ -51,7 +51,6 @@ export const StepperProvider: React.FC<StepperProviderProps> = ({
                                                                     steps,
                                                                     initialStep,
                                                                     onStepChange,
-                                                                    onComplete,
                                                                     children,
                                                                 }) => {
     const initialStepId = initialStep || steps[0]?.id;

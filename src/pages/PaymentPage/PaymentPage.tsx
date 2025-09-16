@@ -3,43 +3,21 @@ import {Alert, Box, Button, Card, CardContent, Grid, Typography} from '@mui/mate
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 
-import FormInput from '../../components/ui/FormInput/FormInput';
-import {type CardType, detectCardType} from '../../utils/creditCard.utils';
-import {formatCVV, formatExpiryDate} from '../../utils/paymentFormatter.utils';
-import {createPaymentSchema, type PaymentFormData} from '../../schemas/paymentSchema';
-
-interface PaymentPageProps {
-    totalAmount: number;
-    onSubmit: (data: PaymentFormData) => Promise<void>;
-}
-
-interface PaymentState {
-    isSubmitting: boolean;
-    error: string | null;
-    cardType: CardType | null;
-}
+import {type CardType, detectCardType} from '@/utils/creditCard.utils';
+import {formatCVV} from '@/utils/paymentFormatter.utils';
+import {createPaymentSchema, type PaymentFormData} from '@/schemas/paymentSchema';
+import FormInput from "@/components/ui/FormInput/FormInput";
 
 const CardIcon: React.FC<{ cardType: CardType | null }> = ({cardType}) => {
     if (!cardType) return null;
-
     const iconMap: Record<CardType, string> = {
         visa: '/credit-card-logos/visa.png',
         mastercard: '/credit-card-logos/mastercard.png',
         amex: '/credit-card-logos/amex.png',
         discover: '/credit-card-logos/discover.png',
     };
-
-    return (
-        <img
-            src={iconMap[cardType]}
-            alt={`${cardType} logo`}
-            height={24}
-            style={{objectFit: 'contain'}}
-            onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-            }}
-        />
-    );
+    return <img src={iconMap[cardType]} alt={`${cardType} logo`} height={24} style={{objectFit: 'contain'}}
+                onError={e => ((e.target as HTMLImageElement).style.display = 'none')}/>;
 };
 
 const SecurityNotice: React.FC = () => (
@@ -50,181 +28,158 @@ const SecurityNotice: React.FC = () => (
     </Box>
 );
 
-const PaymentPage: React.FC<PaymentPageProps> = ({totalAmount, onSubmit}) => {
-    const [paymentState, setPaymentState] = useState<PaymentState>({
+const PaymentPage: React.FC<{
+    totalAmount: number;
+    onSubmit: (data: PaymentFormData) => Promise<void>
+}> = ({totalAmount, onSubmit}) => {
+    const [paymentState, setPaymentState] = useState<{
+        isSubmitting: boolean;
+        error: string | null;
+        cardType: CardType | null
+    }>({
         isSubmitting: false,
         error: null,
         cardType: null,
     });
 
-    const paymentSchema = createPaymentSchema(paymentState.cardType);
+    const schema = createPaymentSchema(paymentState.cardType);
 
     const {control, handleSubmit, setValue, watch, formState: {isValid}} = useForm<PaymentFormData>({
-        resolver: zodResolver(paymentSchema),
+        resolver: zodResolver(schema),
         mode: 'onChange',
-        defaultValues: {
-            cardName: '',
-            cardNumber: '',
-            expirationDate: '',
-            cvv: ''
-        }
+        defaultValues: {cardName: '', cardNumber: '', expirationDate: '', cvv: ''},
     });
 
     const watchedCardNumber = watch('cardNumber');
 
     useEffect(() => {
-        const cleaned = watchedCardNumber.replace(/\D/g, '');
-        const detectedType = detectCardType(cleaned);
-
-        if (detectedType !== paymentState.cardType) {
-            setPaymentState(prev => ({...prev, cardType: detectedType}));
-
-            if (paymentState.cardType && detectedType !== paymentState.cardType) {
+        const cleaned = watchedCardNumber?.replace(/\D/g, '') || '';
+        const detected = detectCardType(cleaned);
+        setPaymentState(prev => {
+            if (prev.cardType !== detected) {
                 setValue('cvv', '');
+                return {...prev, cardType: detected};
             }
-        }
-    }, [watchedCardNumber, paymentState.cardType, setValue]);
+            return prev;
+        });
+    }, [watchedCardNumber, setValue]);
 
-    const formatCardNumber = useCallback((value: string): string => {
-        const cleaned = value.replace(/\D/g, '');
-
-        if (paymentState.cardType === 'amex') {
-            return cleaned.slice(0, 15).replace(/(\d{4})(\d{6})(\d{5})/, '$1 $2 $3').trim();
-        }
-
-        return cleaned.slice(0, 16).replace(/(\d{4})/g, '$1 ').trim();
-    }, [paymentState.cardType]);
-
-    const onLocalSubmit = useCallback(async (data: PaymentFormData) => {
+    const onSubmitHandler = useCallback(async (data: PaymentFormData) => {
         if (paymentState.isSubmitting) return;
 
         setPaymentState(prev => ({...prev, isSubmitting: true, error: null}));
-
         try {
-            const cleanData: PaymentFormData = {
+            await onSubmit({
                 cardName: data.cardName.trim(),
                 cardNumber: data.cardNumber.replace(/\s/g, ''),
                 expirationDate: data.expirationDate,
                 cvv: data.cvv,
-            };
-
-            await onSubmit(cleanData);
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Payment processing failed';
-            setPaymentState(prev => ({
-                ...prev,
-                error: errorMessage,
-                isSubmitting: false
-            }));
+            });
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Payment processing failed';
+            setPaymentState(prev => ({...prev, error: errorMessage, isSubmitting: false}));
         }
     }, [onSubmit, paymentState.isSubmitting]);
 
-    const clearError = useCallback(() => {
-        setPaymentState(prev => ({...prev, error: null}));
-    }, []);
+    const clearError = useCallback(() => setPaymentState(prev => ({...prev, error: null})), []);
 
     return (
-        <form onSubmit={handleSubmit(onLocalSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmitHandler)} noValidate>
             <Card sx={{borderRadius: 3, boxShadow: 3}}>
                 <CardContent sx={{px: 3, py: 3}}>
-                    <Typography variant="h6" gutterBottom fontWeight={600}>
-                        Payment Details
-                    </Typography>
+                    <Typography variant="h6" gutterBottom fontWeight={600}>Payment Details</Typography>
 
-                    {/* Error alert for payment failures */}
-                    {paymentState.error && (
-                        <Alert severity="error" onClose={clearError} sx={{mb: 2}}>
-                            {paymentState.error}
-                        </Alert>
-                    )}
+                    {paymentState.error &&
+                        <Alert severity="error" onClose={clearError} sx={{mb: 2}}>{paymentState.error}</Alert>}
 
                     <Grid container spacing={2}>
-                        {/* Cardholder name */}
                         <Grid size={12}>
                             <FormInput
                                 name="cardName"
                                 control={control}
                                 label="Cardholder Name"
-                                placeholder="John Smith"
+                                placeholder="Hint: John Smith"
                                 disabled={paymentState.isSubmitting}
                             />
                         </Grid>
 
-                        {/* Card number with dynamic icon */}
                         <Grid size={12}>
                             <Box sx={{position: 'relative'}}>
                                 <FormInput
                                     name="cardNumber"
                                     control={control}
                                     label="Card Number"
-                                    placeholder="1234 5678 9012 3456"
-                                    disabled={paymentState.isSubmitting}
+                                    placeholder="4111 1111 1111 1111"
+                                    type="text"
                                     inputProps={{
                                         inputMode: 'numeric',
-                                        maxLength: paymentState.cardType === 'amex' ? 17 : 19,
+                                        maxLength: 19,
                                         onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                            const formatted = formatCardNumber(e.target.value);
-                                            setValue('cardNumber', formatted);
-                                        }
+                                            const rawValue = e.target.value.replace(/\D/g, '').slice(0, 16);
+                                            const formatted = rawValue.replace(/(\d{4})/g, '$1 ').trim();
+                                            setValue('cardNumber', formatted, {shouldValidate: true});
+                                        },
                                     }}
                                 />
+
                                 {paymentState.cardType && (
-                                    <Box sx={{
-                                        position: 'absolute',
-                                        right: 12,
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        pointerEvents: 'none'
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            position: 'absolute',
+                                            right: 12,
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            pointerEvents: 'none',
+                                        }}
+                                    >
                                         <CardIcon cardType={paymentState.cardType}/>
                                     </Box>
                                 )}
                             </Box>
                         </Grid>
 
-                        {/* Expiration date */}
                         <Grid size={6}>
                             <FormInput
                                 name="expirationDate"
                                 control={control}
                                 label="Expiration Date"
                                 placeholder="MM/YY"
-                                disabled={paymentState.isSubmitting}
                                 inputProps={{
                                     inputMode: 'numeric',
                                     maxLength: 5,
                                     onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const formatted = formatExpiryDate(e.target.value);
-                                        setValue('expirationDate', formatted);
-                                    }
+                                        const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                        let formatted = digits;
+                                        if (digits.length >= 3) {
+                                            formatted = digits.slice(0, 2) + '/' + digits.slice(2);
+                                        }
+                                        setValue('expirationDate', formatted, {shouldValidate: true});
+                                    },
                                 }}
                             />
                         </Grid>
 
-                        {/* CVV */}
                         <Grid size={6}>
                             <FormInput
                                 name="cvv"
                                 control={control}
                                 label={paymentState.cardType === 'amex' ? 'CID' : 'CVV'}
-                                placeholder={paymentState.cardType === 'amex' ? '1234' : '123'}
                                 disabled={paymentState.isSubmitting}
                                 inputProps={{
                                     inputMode: 'numeric',
                                     maxLength: paymentState.cardType === 'amex' ? 4 : 3,
                                     onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const formatted = formatCVV(e.target.value, paymentState.cardType);
-                                        setValue('cvv', formatted);
-                                    }
+                                        const rawValue = e.target.value.replace(/\D/g, '').slice(0, paymentState.cardType === 'amex' ? 4 : 3);
+                                        setValue('cvv', rawValue, {shouldValidate: true});
+                                    },
                                 }}
+                                formatDisplay={(value) => formatCVV(value, paymentState.cardType)}
                             />
                         </Grid>
                     </Grid>
 
-                    {/* Security reassurance */}
                     <SecurityNotice/>
 
-                    {/* Submit button */}
                     <Box sx={{mt: 3}}>
                         <Button
                             type="submit"
@@ -233,16 +188,9 @@ const PaymentPage: React.FC<PaymentPageProps> = ({totalAmount, onSubmit}) => {
                             fullWidth
                             size="large"
                             disabled={!isValid || paymentState.isSubmitting}
-                            sx={{
-                                py: 1.5,
-                                fontWeight: 600,
-                                textTransform: 'none',
-                                '&:disabled': {opacity: 0.6},
-                            }}
+                            sx={{py: 1.5, fontWeight: 600, textTransform: 'none', '&:disabled': {opacity: 0.6}}}
                         >
-                            {paymentState.isSubmitting
-                                ? 'Processing...'
-                                : `Pay €${totalAmount} & Confirm Booking`}
+                            {paymentState.isSubmitting ? 'Processing...' : `Pay €${totalAmount} & Confirm Booking`}
                         </Button>
                     </Box>
                 </CardContent>

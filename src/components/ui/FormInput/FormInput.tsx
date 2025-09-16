@@ -1,5 +1,6 @@
-import {InputAdornment, MenuItem, TextField, TextFieldProps, Typography} from '@mui/material';
-import {Control, Controller, FieldPath, FieldValues} from 'react-hook-form';
+import React from 'react';
+import { TextField, TextFieldProps, InputAdornment, MenuItem, Typography } from '@mui/material';
+import { Controller, Control, FieldPath, FieldValues } from 'react-hook-form';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 interface FormInputProps<T extends FieldValues> {
@@ -16,7 +17,8 @@ interface FormInputProps<T extends FieldValues> {
     disabled?: boolean;
     min?: number;
     max?: number;
-    inputProps?: TextFieldProps["inputProps"];
+    inputProps?: TextFieldProps['inputProps'];
+    formatDisplay?: (value: string) => string;
 }
 
 export function FormInput<T extends FieldValues>({
@@ -33,58 +35,37 @@ export function FormInput<T extends FieldValues>({
                                                      disabled = false,
                                                      min,
                                                      max,
-                                                     inputProps
+                                                     inputProps,
+                                                     formatDisplay,
                                                  }: FormInputProps<T>) {
     return (
         <Controller
             name={name}
             control={control}
-            render={({field, fieldState}) => (
+            render={({ field, fieldState }) => (
                 <>
                     <TextField
-                        {...field}
-                        value={field.value ?? ''}
+                        value={formatDisplay ? formatDisplay(field.value ?? '') : field.value ?? ''}
+                        onChange={inputProps?.onChange || field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                         fullWidth
                         label={label}
                         placeholder={placeholder}
                         type={type}
                         disabled={disabled}
                         error={!!fieldState.error}
-                        helperText={fieldState.error?.message || ''}
+                        helperText={fieldState.error?.message || placeholder || ''}
                         select={isSelect}
-                        onChange={(e) => {
-                            if (type === 'number') {
-                                const value = e.target.value;
-
-                                if (value === '') {
-                                    field.onChange('');
-                                    return;
-                                }
-
-                                if (!/^\d+$/.test(value)) return;
-
-                                const numValue = parseInt(value, 10);
-
-                                if (min !== undefined && numValue < min) {
-                                    field.onChange(min);
-                                } else if (max !== undefined && numValue > max) {
-                                    field.onChange(max);
-                                } else {
-                                    field.onChange(numValue);
-                                }
-                            } else {
-                                field.onChange(e);
-                            }
-                        }}
                         InputProps={{
-                            startAdornment: icon ? (
-                                <InputAdornment position="start">{icon}</InputAdornment>
-                            ) : undefined,
+                            startAdornment: icon ? <InputAdornment position="start">{icon}</InputAdornment> : undefined,
                             inputProps: {
                                 min,
                                 max,
                                 ...inputProps,
-                            }
+                                onChange: undefined,
+                            },
                         }}
                     >
                         {isSelect &&
@@ -98,15 +79,9 @@ export function FormInput<T extends FieldValues>({
                     {showAutofillWarning && extraWarning && !fieldState.error && (
                         <Typography
                             variant="caption"
-                            sx={{
-                                color: 'warning.main',
-                                display: 'flex',
-                                alignItems: 'center',
-                                mt: 0.5,
-                                ml: 1,
-                            }}
+                            sx={{ color: 'warning.main', display: 'flex', alignItems: 'center', mt: 0.5, ml: 1 }}
                         >
-                            <WarningAmberIcon sx={{fontSize: 16, mr: 0.5}}/>
+                            <WarningAmberIcon sx={{ fontSize: 16, mr: 0.5 }} />
                             {extraWarning}
                         </Typography>
                     )}

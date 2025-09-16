@@ -67,7 +67,6 @@ const bookingSlice = createSlice({
             state.data.search = { ...state.data.search, ...action.payload };
         },
 
-        // Accept Flight | null (Flight already has optional selectedClass / selectedPrice)
         selectOutboundFlight: (state, action: PayloadAction<Flight | null>) => {
             state.data.outboundFlight = action.payload;
 

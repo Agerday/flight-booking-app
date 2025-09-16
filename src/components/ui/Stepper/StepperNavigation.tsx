@@ -1,6 +1,7 @@
-import {Box, Button, CircularProgress} from '@mui/material';
-import {ArrowBack, ArrowForward, CheckCircle} from '@mui/icons-material';
-import {useStepper} from "../../../hooks/useStepper";
+import {useStepper} from "@/hooks/useStepper";
+import {ArrowBack, ArrowForward, CheckCircle} from "@mui/icons-material";
+import {Box, Button, CircularProgress} from "@mui/material";
+import React from "react";
 
 interface StepperNavigationProps {
     nextLabel?: string;
@@ -9,6 +10,7 @@ interface StepperNavigationProps {
     customNextButton?: React.ReactNode;
     customPreviousButton?: React.ReactNode;
     customConfirmButton?: React.ReactNode;
+    hideNextButton?: boolean;
 }
 
 export const StepperNavigation: React.FC<StepperNavigationProps> = ({
@@ -18,6 +20,7 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
                                                                         customNextButton,
                                                                         customPreviousButton,
                                                                         customConfirmButton,
+                                                                        hideNextButton = false,
                                                                     }) => {
     const {
         canGoNext,
@@ -30,7 +33,7 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
     } = useStepper();
 
     const showPrevious = !isFirstStep();
-    const showNext = !isLastStep();
+    const showNext = !isLastStep() && !hideNextButton;
     const showConfirm = isLastStep();
 
     return (
@@ -100,5 +103,3 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
         </Box>
     );
 };
-
-export default StepperNavigation;

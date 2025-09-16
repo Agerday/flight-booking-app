@@ -1,17 +1,11 @@
-import React, {useEffect} from 'react';
-import {Box, Button, Card, CardContent, Chip, MenuItem, Select, Stack, Typography,} from '@mui/material';
-import {keyframes} from '@emotion/react';
+import React, { useEffect } from 'react';
+import { Box, Button, Card, CardContent, Chip, MenuItem, Select, Stack, Typography, SxProps, Theme } from '@mui/material';
+import { keyframes } from '@emotion/react';
 
 const pulse = keyframes`
-    0% {
-        box-shadow: 0 0 0px rgba(0, 0, 0, 0);
-    }
-    50% {
-        box-shadow: 0 0 12px rgba(0, 200, 255, 0.5);
-    }
-    100% {
-        box-shadow: 0 0 0px rgba(0, 0, 0, 0);
-    }
+    0% { box-shadow: 0 0 0 rgba(0,0,0,0); }
+    50% { box-shadow: 0 0 12px rgba(0,200,255,0.5); }
+    100% { box-shadow: 0 0 0 rgba(0,0,0,0); }
 `;
 
 interface DropdownOption {
@@ -33,6 +27,8 @@ interface ToggleCardProps {
     dropdownValue?: string;
     onDropdownChange?: (value: string) => void;
     dropdownLabel?: string;
+    sx?: SxProps<Theme>;
+    titleProps?: SxProps<Theme>;
 }
 
 const ToggleCard: React.FC<ToggleCardProps> = ({
@@ -48,10 +44,12 @@ const ToggleCard: React.FC<ToggleCardProps> = ({
                                                    dropdownValue,
                                                    onDropdownChange,
                                                    dropdownLabel,
+                                                   sx,
+                                                   titleProps,
                                                }) => {
     useEffect(() => {
         if (isSelected && dropdownOptions?.length && !dropdownValue && onDropdownChange) {
-            onDropdownChange(dropdownOptions[0].value);   // ✅ give value only
+            onDropdownChange(dropdownOptions[0].value);
         }
     }, [isSelected, dropdownOptions, dropdownValue, onDropdownChange]);
 
@@ -69,15 +67,16 @@ const ToggleCard: React.FC<ToggleCardProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
+                ...sx,
             }}
         >
-            <CardContent sx={{flexGrow: 1}}>
+            <CardContent sx={{ flexGrow: 1 }}>
                 <Stack spacing={1}>
                     <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography variant="h6">
+                        <Typography variant="h6" sx={{ whiteSpace: 'normal', ...titleProps }}>
                             {icon} {title}
                         </Typography>
-                        <Chip label={`€${price}`} size="small" color={color}/>
+                        <Chip label={`€${price}`} size="small" color={color} />
                     </Stack>
 
                     <Typography variant="body2" fontWeight={500}>
@@ -89,19 +88,19 @@ const ToggleCard: React.FC<ToggleCardProps> = ({
                             {dropdownLabel && (
                                 <Typography
                                     variant="caption"
-                                    sx={{fontStyle: 'italic', display: 'block', mt: 1}}
+                                    sx={{ fontStyle: 'italic', display: 'block', mt: 1 }}
                                 >
                                     {dropdownLabel}
                                 </Typography>
                             )}
                             <Select
                                 value={dropdownValue || ''}
-                                onChange={(e) => onDropdownChange(e.target.value)}   // ✅ wrap event
+                                onChange={(e) => onDropdownChange(e.target.value)}
                                 fullWidth
                                 size="small"
                                 variant="outlined"
                             >
-                                {dropdownOptions.map(({value, label, price: optionPrice}) => (
+                                {dropdownOptions.map(({ value, label, price: optionPrice }) => (
                                     <MenuItem key={value} value={value}>
                                         {label} – €{optionPrice}
                                     </MenuItem>
@@ -112,7 +111,7 @@ const ToggleCard: React.FC<ToggleCardProps> = ({
                 </Stack>
             </CardContent>
 
-            <Box sx={{px: 2, pb: 2}}>
+            <Box sx={{ px: 2, pb: 2 }}>
                 <Button
                     onClick={onToggle}
                     fullWidth

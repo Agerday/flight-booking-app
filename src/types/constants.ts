@@ -16,8 +16,6 @@ export const countryMap = {
     AUS: 'Australia',
 } as const;
 
-export const mapCountry = (code: string): string => countryMap[code as keyof typeof countryMap] || code;
-
 export const extrasPricing = {
     meals: 12,
     baggageInsurance: 8,
@@ -97,10 +95,3 @@ export const genderOptions = [
     {value: 'female', label: 'Female'},
     {value: 'other', label: 'Other'},
 ] as const;
-
-export const mapGender = (code?: string | null | undefined): string => {
-    const gender = code?.toUpperCase();
-    if (gender === 'M') return 'male';
-    if (gender === 'F') return 'female';
-    return 'other';
-};

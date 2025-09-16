@@ -1,4 +1,5 @@
-import {useStepper} from "../../../hooks/useStepper";
+import {useStepper} from "@/context/StepperContext";
+import React from "react";
 
 interface StepContentProps {
     stepId: string;

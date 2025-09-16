@@ -151,17 +151,6 @@ const SeatMap: React.FC<SeatMapProps> = ({
         );
     };
 
-    const renderSeatColumn = (seatGroup: string[]) =>
-        seatGroup.map((seat) => (
-            <Grid key={seat}>
-                <Grid container direction="column" spacing={1} alignItems="center">
-                    {visibleRows.map((row) => (
-                        <Grid key={`${row}${seat}`}>{renderSeat(row, seat)}</Grid>
-                    ))}
-                </Grid>
-            </Grid>
-        ));
-
     return (
         <Box sx={{px: 2}}>
             <Slide direction="down" in timeout={600}>
