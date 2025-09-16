@@ -1,6 +1,6 @@
-import {useStepper} from "@/hooks/useStepper";
-import {ArrowBack, ArrowForward, CheckCircle} from "@mui/icons-material";
-import {Box, Button, CircularProgress} from "@mui/material";
+import { useStepper } from "@/hooks/useStepper";
+import { ArrowBack, ArrowForward } from "@mui/icons-material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import React from "react";
 
 interface StepperNavigationProps {
@@ -14,9 +14,9 @@ interface StepperNavigationProps {
 }
 
 export const StepperNavigation: React.FC<StepperNavigationProps> = ({
-                                                                        nextLabel = 'Next',
-                                                                        previousLabel = 'Previous',
-                                                                        confirmLabel = 'Confirm',
+                                                                        nextLabel = "Next",
+                                                                        previousLabel = "Previous",
+                                                                        confirmLabel = "Confirm",
                                                                         customNextButton,
                                                                         customPreviousButton,
                                                                         customConfirmButton,
@@ -32,41 +32,44 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
         isLastStep,
     } = useStepper();
 
-    const showPrevious = !isFirstStep();
+    const onGoHome = () => {
+        window.location.href = "/"; // redirect to home page
+    };
+
+    const showPrevious = !isFirstStep() && !isLastStep(); // hide previous on last step
     const showNext = !isLastStep() && !hideNextButton;
     const showConfirm = isLastStep();
 
     return (
         <Box
             sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
                 mt: 4,
                 pt: 3,
                 borderTop: 1,
-                borderColor: 'divider',
+                borderColor: "divider",
             }}
         >
             <Box>
-                {showPrevious && (
-                    customPreviousButton || (
+                {showPrevious &&
+                    (customPreviousButton || (
                         <Button
                             variant="outlined"
                             onClick={previousStep}
                             disabled={!canGoPrev}
-                            startIcon={<ArrowBack/>}
+                            startIcon={<ArrowBack />}
                             size="large"
                         >
                             {previousLabel}
                         </Button>
-                    )
-                )}
+                    ))}
             </Box>
 
             <Box>
-                {showNext && (
-                    customNextButton || (
+                {showNext &&
+                    (customNextButton || (
                         <Button
                             id="next-step-btn"
                             variant="contained"
@@ -74,31 +77,29 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
                             disabled={!canGoNext}
                             endIcon={
                                 isValidating ? (
-                                    <CircularProgress size={20} color="inherit"/>
+                                    <CircularProgress size={20} color="inherit" />
                                 ) : (
-                                    <ArrowForward/>
+                                    <ArrowForward />
                                 )
                             }
                             size="large"
                         >
-                            {isValidating ? 'Validating...' : nextLabel}
+                            {isValidating ? "Validating..." : nextLabel}
                         </Button>
-                    )
-                )}
+                    ))}
 
-                {showConfirm && (
-                    customConfirmButton || (
+                {showConfirm &&
+                    (customConfirmButton || (
                         <Button
                             variant="contained"
-                            color="success"
-                            disabled={!canGoNext}
-                            startIcon={<CheckCircle/>}
+                            color="primary"
+                            startIcon={<ArrowForward />}
                             size="large"
+                            onClick={onGoHome}
                         >
-                            {confirmLabel}
+                            Go back to Home Page
                         </Button>
-                    )
-                )}
+                    ))}
             </Box>
         </Box>
     );

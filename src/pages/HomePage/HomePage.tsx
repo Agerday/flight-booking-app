@@ -1,12 +1,19 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Box, Button, Container, Fade, Typography} from '@mui/material';
 import {useNavigate} from 'react-router-dom';
 import FrostedCard from "../../components/layout/FrostedCard/FrostedCard";
 import {AnimatePresence, motion} from 'framer-motion';
+import {resetBooking} from "@/redux/slices/bookingSlice";
+import {useAppDispatch} from "@/redux/hooks";
 
 const HomePage = () => {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const [fly, setFly] = useState(false);
+
+    useEffect(() => {
+        dispatch(resetBooking());
+    }, [dispatch]);
 
     const handleBookingClick = () => {
         setFly(true);
