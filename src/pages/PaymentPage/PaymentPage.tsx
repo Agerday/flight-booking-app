@@ -4,7 +4,7 @@ import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 
 import {type CardType, detectCardType} from '@/utils/creditCard.utils';
-import {formatCVV} from '@/utils/paymentFormatter.utils';
+import {formatCardNumber, formatCVV, formatExpiryDate} from '@/utils/paymentFormatter.utils';
 import {createPaymentSchema, type PaymentFormData} from '@/schemas/paymentSchema';
 import FormInput from "@/components/ui/FormInput/FormInput";
 
@@ -104,7 +104,7 @@ const PaymentPage: React.FC<{
                         </Grid>
 
                         <Grid size={12}>
-                            <Box sx={{position: 'relative'}}>
+                            <Box sx={{ position: 'relative' }}>
                                 <FormInput
                                     name="cardNumber"
                                     control={control}
@@ -116,10 +116,10 @@ const PaymentPage: React.FC<{
                                         maxLength: 19,
                                         onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                                             const rawValue = e.target.value.replace(/\D/g, '').slice(0, 16);
-                                            const formatted = rawValue.replace(/(\d{4})/g, '$1 ').trim();
-                                            setValue('cardNumber', formatted, {shouldValidate: true});
+                                            setValue('cardNumber', rawValue, { shouldValidate: true });
                                         },
                                     }}
+                                    formatDisplay={(value) => formatCardNumber(value, paymentState.cardType)}
                                 />
 
                                 {paymentState.cardType && (
@@ -132,7 +132,7 @@ const PaymentPage: React.FC<{
                                             pointerEvents: 'none',
                                         }}
                                     >
-                                        <CardIcon cardType={paymentState.cardType}/>
+                                        <CardIcon cardType={paymentState.cardType} />
                                     </Box>
                                 )}
                             </Box>
@@ -148,14 +148,11 @@ const PaymentPage: React.FC<{
                                     inputMode: 'numeric',
                                     maxLength: 5,
                                     onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
-                                        let formatted = digits;
-                                        if (digits.length >= 3) {
-                                            formatted = digits.slice(0, 2) + '/' + digits.slice(2);
-                                        }
-                                        setValue('expirationDate', formatted, {shouldValidate: true});
+                                        const rawValue = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                        setValue('expirationDate', rawValue, { shouldValidate: true });
                                     },
                                 }}
+                                formatDisplay={formatExpiryDate}
                             />
                         </Grid>
 

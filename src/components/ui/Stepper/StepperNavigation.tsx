@@ -16,7 +16,6 @@ interface StepperNavigationProps {
 export const StepperNavigation: React.FC<StepperNavigationProps> = ({
                                                                         nextLabel = "Next",
                                                                         previousLabel = "Previous",
-                                                                        confirmLabel = "Confirm",
                                                                         customNextButton,
                                                                         customPreviousButton,
                                                                         customConfirmButton,
@@ -33,10 +32,10 @@ export const StepperNavigation: React.FC<StepperNavigationProps> = ({
     } = useStepper();
 
     const onGoHome = () => {
-        window.location.href = "/"; // redirect to home page
+        window.location.href = "/";
     };
 
-    const showPrevious = !isFirstStep() && !isLastStep(); // hide previous on last step
+    const showPrevious = !isFirstStep() && !isLastStep();
     const showNext = !isLastStep() && !hideNextButton;
     const showConfirm = isLastStep();
 

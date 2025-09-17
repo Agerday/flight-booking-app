@@ -18,7 +18,7 @@ export const flightSearchSchema = z.object({
     }).refine(isFutureDateFrom(), { message: "Departure date must be in the future" }),
     returnDate: z.date().optional(),
     tripType: z.nativeEnum(TripType),
-    passengerNumber: z.string().refine(inRange(1, 9), {
+    passengerNumber: z.number().refine(inRange(1, 9), {
         message: "Passenger count must be between 1 and 9",
     }),
 })

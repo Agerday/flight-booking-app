@@ -1,7 +1,7 @@
-import React from 'react';
-import { TextField, TextFieldProps, InputAdornment, MenuItem, Typography } from '@mui/material';
-import { Controller, Control, FieldPath, FieldValues } from 'react-hook-form';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import React from "react";
+import {InputAdornment, MenuItem, TextField, TextFieldProps, Typography,} from "@mui/material";
+import {Control, Controller, FieldPath, FieldValues} from "react-hook-form";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 interface FormInputProps<T extends FieldValues> {
     name: FieldPath<T>;
@@ -17,7 +17,7 @@ interface FormInputProps<T extends FieldValues> {
     disabled?: boolean;
     min?: number;
     max?: number;
-    inputProps?: TextFieldProps['inputProps'];
+    inputProps?: TextFieldProps["inputProps"];
     formatDisplay?: (value: string) => string;
 }
 
@@ -27,11 +27,11 @@ export function FormInput<T extends FieldValues>({
                                                      label,
                                                      placeholder,
                                                      icon,
-                                                     type = 'text',
+                                                     type = "text",
                                                      isSelect = false,
                                                      options = [],
                                                      showAutofillWarning = false,
-                                                     extraWarning = '',
+                                                     extraWarning = "",
                                                      disabled = false,
                                                      min,
                                                      max,
@@ -42,11 +42,33 @@ export function FormInput<T extends FieldValues>({
         <Controller
             name={name}
             control={control}
-            render={({ field, fieldState }) => (
+            render={({field, fieldState}) => (
                 <>
                     <TextField
-                        value={formatDisplay ? formatDisplay(field.value ?? '') : field.value ?? ''}
-                        onChange={inputProps?.onChange || field.onChange}
+                        value={
+                            formatDisplay
+                                ? formatDisplay(field.value ?? "")
+                                : field.value ?? ""
+                        }
+                        onChange={(e) => {
+                            let val = e.target.value;
+
+                            if (val === "") {
+                                field.onChange(undefined);
+                                return;
+                            }
+
+                            if (type === "number" && !isSelect) {
+                                let num = Number(val);
+
+                                if (min !== undefined && num < min) num = min;
+                                if (max !== undefined && num > max) num = max;
+
+                                field.onChange(num);
+                            } else {
+                                field.onChange(val);
+                            }
+                        }}
                         onBlur={field.onBlur}
                         name={field.name}
                         ref={field.ref}
@@ -56,15 +78,16 @@ export function FormInput<T extends FieldValues>({
                         type={type}
                         disabled={disabled}
                         error={!!fieldState.error}
-                        helperText={fieldState.error?.message || placeholder || ''}
+                        helperText={fieldState.error?.message || placeholder || ""}
                         select={isSelect}
                         InputProps={{
-                            startAdornment: icon ? <InputAdornment position="start">{icon}</InputAdornment> : undefined,
+                            startAdornment: icon ? (
+                                <InputAdornment position="start">{icon}</InputAdornment>
+                            ) : undefined,
                             inputProps: {
                                 min,
                                 max,
                                 ...inputProps,
-                                onChange: undefined,
                             },
                         }}
                     >
@@ -76,15 +99,23 @@ export function FormInput<T extends FieldValues>({
                             ))}
                     </TextField>
 
-                    {showAutofillWarning && extraWarning && !fieldState.error && (
-                        <Typography
-                            variant="caption"
-                            sx={{ color: 'warning.main', display: 'flex', alignItems: 'center', mt: 0.5, ml: 1 }}
-                        >
-                            <WarningAmberIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                            {extraWarning}
-                        </Typography>
-                    )}
+                    {showAutofillWarning &&
+                        extraWarning &&
+                        !fieldState.error && (
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: "warning.main",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    mt: 0.5,
+                                    ml: 1,
+                                }}
+                            >
+                                <WarningAmberIcon sx={{fontSize: 16, mr: 0.5}}/>
+                                {extraWarning}
+                            </Typography>
+                        )}
                 </>
             )}
         />
