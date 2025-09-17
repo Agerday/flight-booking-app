@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage/HomePage';
 import {persistor} from "./redux/store";
 import {PersistGate} from "redux-persist/integration/react";
 import TopMenu from "@/components/layout/TopMenu/TopMenu";
+import PlaneLoader from "@/components/ui/PlaneLoader/PlaneLoader";
 
 const BookingPage = lazy(() => import('./pages/BookingPage/BookingPage'));
 const MyBookings = lazy(() => import('./pages/MyBookings/MyBookings'));
@@ -17,16 +18,16 @@ function App() {
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
             <ThemeProvider theme={airlineTheme}>
-                <CssBaseline />
+                <CssBaseline/>
                 <Router>
                     <PersistGate loading={null} persistor={persistor}>
-                        <TopMenu />
+                        <TopMenu/>
 
-                        <Suspense fallback={<div>Loading...</div>}>
+                        <Suspense fallback={<PlaneLoader/>}>
                             <Routes>
-                                <Route path="/" element={<HomePage />} />
-                                <Route path="/book" element={<BookingPage />} />
-                                <Route path="/my-bookings" element={<MyBookings />} />
+                                <Route path="/" element={<HomePage/>}/>
+                                <Route path="/book" element={<BookingPage/>}/>
+                                <Route path="/my-bookings" element={<MyBookings/>}/>
                             </Routes>
                         </Suspense>
                     </PersistGate>
